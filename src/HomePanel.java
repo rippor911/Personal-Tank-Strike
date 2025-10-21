@@ -32,13 +32,15 @@ public class HomePanel extends JPanel {
         setPreferredSize(new Dimension(width,height));
         setDoubleBuffered(true);
 
+        setLayout(null);
+
         this.window = window;
 
         createStartButton();
     }
 
     private void createStartButton() {
-        startButton = new JButton("开始游戏");
+        startButton = new JButton("Game Start");
         
         // 设置按钮位置和大小
         int buttonWidth = 150;
@@ -72,11 +74,17 @@ public class HomePanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 // 开始游戏逻辑
                 System.out.println("游戏开始！");
+                removeStartButton();
+                window.gameStart();
             }
         });
         
         add(startButton);
-    }    
+    }
+    
+    public void removeStartButton() {
+        this.remove(startButton);
+    }
 
     @Override
     public void paintComponent(Graphics g) {

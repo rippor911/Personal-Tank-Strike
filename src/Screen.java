@@ -10,11 +10,11 @@ public class Screen extends JFrame {
         setResizable(false);
         setTitle("Tank Strike");
 
-        /*gamePanel = new GamePanel();
-        add(gamePanel);*/
-
         homePanel = new HomePanel(this);
         add(homePanel);
+        setVisible(true);
+
+        gamePanel = null;
 
         pack();
 
@@ -24,10 +24,20 @@ public class Screen extends JFrame {
     }
 
     void build() {
-        
+        homePanel = new HomePanel(this);
+        add(homePanel);
+        if (gamePanel != null) {
+            remove(gamePanel);
+        }
+        setVisible(true);       
     }
 
     void gameStart() {
-
+        gamePanel = new GamePanel(this);
+        add(gamePanel);
+        if (homePanel != null) {
+            remove(homePanel);
+        }
+        setVisible(true);               
     }
 }
