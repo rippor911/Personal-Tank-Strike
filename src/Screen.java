@@ -1,3 +1,5 @@
+import java.io.IOException;
+
 import javax.swing.JFrame;
 
 public class Screen extends JFrame {
@@ -34,7 +36,7 @@ public class Screen extends JFrame {
         setVisible(true);       
     }
 
-    void gameStart() {
+    void gameStart() throws IOException {
         gamePanel = new GamePanel(this);
         add(gamePanel);
         if (homePanel != null) {

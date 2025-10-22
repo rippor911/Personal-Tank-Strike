@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -75,7 +76,11 @@ public class HomePanel extends JPanel {
                 // 开始游戏逻辑
                 System.out.println("游戏开始！");
                 removeStartButton();
-                window.gameStart();
+                try {
+                    window.gameStart();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
             }
         });
         
