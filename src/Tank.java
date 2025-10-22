@@ -1,3 +1,8 @@
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+
 public class Tank {
     private int x;
     private int y;
@@ -10,6 +15,8 @@ public class Tank {
     private int maxRow;
     private int maxCol;
     private int tileSize;
+    private BufferedImage tankImage;
+    private BufferedImage lastImage;
 
     public Tank(int x,int y,int maxRow,int maxCol,int tileSize) {
         this.x = x;
@@ -21,6 +28,55 @@ public class Tank {
         this.maxRow = maxRow;
         this.maxCol = maxCol;
         this.tileSize = tileSize;
+        try {
+            lastImage = ImageIO.read(getClass().getResource("/images/tankLeft.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            lastImage = null;
+        }
+        
+    }
+
+    //image section:
+
+    public BufferedImage getTankImage(int dx,int dy) {
+        try {
+
+            if (dx == -speed && dy == 0) {
+                tankImage = ImageIO.read(getClass().getResource("/images/tankLeft.png"));
+            }
+            if (dx == -speed && dy == speed) {
+                tankImage = ImageIO.read(getClass().getResource("/images/tankLeftDown.png"));
+            }
+            if (dx == 0 && dy == speed) {
+                tankImage = ImageIO.read(getClass().getResource("/images/tankDown.png"));
+            }
+            if (dx == speed && dy == speed) {
+                tankImage = ImageIO.read(getClass().getResource("/images/tankRightDown.png"));
+            }
+            if (dx == speed && dy == 0) {
+                tankImage = ImageIO.read(getClass().getResource("/images/tankRight.png"));
+            }
+            if (dx == speed && dy == -speed) {
+                tankImage = ImageIO.read(getClass().getResource("/images/tankRightUp.png"));
+            }
+            if (dx == 0 && dy == -speed) {
+                tankImage = ImageIO.read(getClass().getResource("/images/tankUp.png"));
+            }
+            if (dx == -speed && dy == -speed) {
+                tankImage = ImageIO.read(getClass().getResource("/images/tankLeftUp.png"));
+            }
+            if (dx == 0 && dy == 0) {
+                tankImage = lastImage;
+            } else {
+                lastImage = tankImage;
+            }
+            
+            return tankImage;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     //action section:

@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.io.IOException;
 
 import javax.swing.JPanel;
 
@@ -18,8 +19,9 @@ public class GamePanel extends JPanel implements Runnable {
     private Screen window;
 
     private User user = null;
+    private TileManager tm = null;
 
-    public GamePanel(Screen screen) {
+    public GamePanel(Screen screen) throws IOException {
         width = tileSize * maxCol * scale;
         height = tileSize * maxRow * scale;
 
@@ -27,6 +29,8 @@ public class GamePanel extends JPanel implements Runnable {
 
         user = new User(100,100,this);   //warning : to do random logic
         this.addKeyListener(user);
+
+        tm = new TileManager(this);
 
         this.setPreferredSize(new Dimension(width,height));
         this.setBackground(Color.white);
@@ -92,6 +96,9 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void update() {
+
+        tm.update();
+
         user.update();
         
     }
@@ -101,6 +108,8 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
 
         Graphics2D g2 = (Graphics2D) g;
+
+        tm.draw(g2);
 
         user.draw(g2);
 
@@ -119,5 +128,13 @@ public class GamePanel extends JPanel implements Runnable {
 
     public int getHeight() {
         return height;
+    }
+
+    public int getMaxRow() {
+        return maxRow;
+    }
+
+    public int getMaxCol() {
+        return maxCol;
     }
 }

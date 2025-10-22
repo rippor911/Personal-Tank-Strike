@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
 
 public class User implements KeyListener {
     
@@ -48,19 +49,16 @@ public class User implements KeyListener {
     }
 
     public void draw(Graphics2D g2) {
-        
-        if (g2 == null) {
-            System.err.println("g2 is null");
+
+        BufferedImage tankImage = myTank.getTankImage(dx,dy);
+
+        if (tankImage != null) {
+            g2.drawImage(tankImage, myTank.getX(), myTank.getY()
+                ,gp.getTileSize(),gp.getTileSize(), null);
+
         } else {
             g2.setColor(Color.red);
-            if (gp == null) {
-                System.err.println("gp is null");
-            }
-            else if (myTank == null) {
-                System.err.println("myTank is null");
-            } else {
-                g2.fillRect(myTank.getX(), myTank.getY(), gp.getTileSize(), gp.getTileSize());
-            }
+            g2.fillRect(myTank.getX(), myTank.getY(), gp.getTileSize(), gp.getTileSize());
         }
     }
 
@@ -69,7 +67,6 @@ public class User implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
-        System.out.println("keyPressed!");
         if (code == KeyEvent.VK_W) {
             upPressed = true;
         }
@@ -90,7 +87,6 @@ public class User implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
         int code = e.getKeyCode();
-        System.out.println("keyReleased!");
         if (code == KeyEvent.VK_W) {
             upPressed = false;
         }
