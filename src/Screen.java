@@ -10,6 +10,8 @@ public class Screen extends JFrame {
         setResizable(false);
         setTitle("Tank Strike");
 
+        this.setSize(2304,1728);
+
         homePanel = new HomePanel(this);
         add(homePanel);
         setVisible(true);
@@ -38,6 +40,6 @@ public class Screen extends JFrame {
         if (homePanel != null) {
             remove(homePanel);
         }
-        setVisible(true);               
+        setVisible(true);
     }
 }

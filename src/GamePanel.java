@@ -25,13 +25,25 @@ public class GamePanel extends JPanel implements Runnable {
 
         this.window = screen;
 
-        user = new User();
+        user = new User(100,100,this);   //warning : to do random logic
+        this.addKeyListener(user);
 
-        setPreferredSize(new Dimension(width,height));
-        setBackground(Color.white);
-        setDoubleBuffered(true);
-        addKeyListener(user);
-        setFocusable(true);
+        this.setPreferredSize(new Dimension(width,height));
+        this.setBackground(Color.white);
+        this.setDoubleBuffered(true);
+        this.setFocusable(true);
+        this.setRequestFocusEnabled(true);
+
+        this.addHierarchyListener(new java.awt.event.HierarchyListener() {
+            @Override
+            public void hierarchyChanged(java.awt.event.HierarchyEvent e) {
+                if ((e.getChangeFlags() & java.awt.event.HierarchyEvent.SHOWING_CHANGED) != 0) {
+                    if (isShowing()) {
+                        requestFocusInWindow();
+                    }
+                }
+            }
+        });
         
         startGameThread();
     }
@@ -44,13 +56,17 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void endGame() {
-        window.build();
+        try {
+            window.build();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void run() {
 
-        double drawInterval = 1000000000 / fps;
+        double drawInterval = 1000000000 / fps; //1s = 10^9 ns
         double nextDrawTime = System.nanoTime() + drawInterval;
         while (gameThread != null) {
             
@@ -62,7 +78,7 @@ public class GamePanel extends JPanel implements Runnable {
 
             try {
                 double remainingTime = nextDrawTime - System.nanoTime();
-                remainingTime = remainingTime / 1000000;    //nm to mm
+                remainingTime = remainingTime / 1000000;    //ns to ms
                 if (remainingTime < 0) {
                     remainingTime = 0;
                 }                
@@ -71,11 +87,13 @@ public class GamePanel extends JPanel implements Runnable {
 
                 e.printStackTrace();
             }
+            nextDrawTime = System.nanoTime() + drawInterval;
         }
     }
 
     public void update() {
-
+        user.update();
+        
     }
 
     @Override
@@ -83,5 +101,23 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
 
         Graphics2D g2 = (Graphics2D) g;
+
+        user.draw(g2);
+
+        g2.dispose();
+    }
+
+    //getter:
+
+    public int getTileSize() {
+        return tileSize;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 }
