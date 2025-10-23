@@ -10,6 +10,7 @@ public class User implements KeyListener {
     private boolean leftPressed;
     private boolean downPressed;
     private boolean rightPressed;
+    private boolean shootPressed;
 
     private int dx;
     private int dy;
@@ -46,6 +47,12 @@ public class User implements KeyListener {
             myTank.update(dx,dy);
         }
 
+        if (shootPressed) {
+            myTank.shoot();
+        }
+        
+        System.out.println("(" + myTank.getX() + "," + myTank.getY() + ")");
+
     }
 
     public void draw(Graphics2D g2) {
@@ -81,7 +88,11 @@ public class User implements KeyListener {
 
         if (code == KeyEvent.VK_D) {
             rightPressed = true;
-        }                
+        }
+        
+        if (code == KeyEvent.VK_SPACE) {
+            shootPressed = true;
+        }
     }
 
     @Override
@@ -101,7 +112,11 @@ public class User implements KeyListener {
 
         if (code == KeyEvent.VK_D) {
             rightPressed = false;
-        }                
+        }
+        
+        if (code == KeyEvent.VK_SPACE) {
+            shootPressed = false;
+        }
     }
 
     @Override

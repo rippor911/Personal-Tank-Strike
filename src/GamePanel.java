@@ -7,13 +7,14 @@ import java.io.IOException;
 import javax.swing.JPanel;
 
 public class GamePanel extends JPanel implements Runnable {
-    private final int tileSize = 48;
-    private final int maxCol = 16;
-    private final int maxRow = 12;
-    private final int scale = 3;
+    private int tileSize = 48;
+    private int maxCol = 16;
+    private int maxRow = 12;
+    private int scale = 3;
     private int width;
     private int height;
     private int fps = 60;
+    private int [][] map;
 
     private Thread gameThread;
     private Screen window;
@@ -22,15 +23,23 @@ public class GamePanel extends JPanel implements Runnable {
     private TileManager tm = null;
 
     public GamePanel(Screen screen) throws IOException {
+
+        tileSize = screen.getTileSize();
+        maxCol = screen.getMaxCol();
+        maxRow = screen.getMaxRow();
+        scale = screen.scale();
+
         width = tileSize * maxCol * scale;
         height = tileSize * maxRow * scale;
 
         this.window = screen;
+        
+        tm = new TileManager(this);
+        tm.buildMap();
+        map = tm.getMap();
 
         user = new User(100,100,this);   //warning : to do random logic
-        this.addKeyListener(user);
-
-        tm = new TileManager(this);
+        this.addKeyListener(user);        
 
         this.setPreferredSize(new Dimension(width,height));
         this.setBackground(Color.white);
@@ -131,10 +140,14 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public int getMaxRow() {
-        return maxRow;
+        return maxRow * scale;
     }
 
     public int getMaxCol() {
-        return maxCol;
+        return maxCol * scale;
+    }
+
+    public int [][] getMap() {
+        return map;
     }
 }

@@ -13,10 +13,10 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 public class HomePanel extends JPanel {
-    private final int tileSize = 16;
-    private final int maxCol = 16;
-    private final int maxRow = 12;
-    private final int scale = 5;
+    private int tileSize = 16;
+    private int maxCol = 16;
+    private int maxRow = 12;
+    private int scale = 3;
     private int width;
     private int height;
 
@@ -25,6 +25,12 @@ public class HomePanel extends JPanel {
     private Screen window;
 
     public HomePanel(Screen window) {
+
+        tileSize = window.getTileSize();
+        maxCol = window.getMaxCol();
+        maxRow = window.getMaxRow();
+        scale = window.scale();
+
         width = tileSize * maxCol * scale;
         height = tileSize * maxRow * scale;
 
@@ -36,6 +42,7 @@ public class HomePanel extends JPanel {
         setLayout(null);
 
         this.window = window;
+        
 
         createStartButton();
     }

@@ -94,7 +94,7 @@ public class Tank {
     }
 
     public void shoot() {
-
+        System.out.println("Fire!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     }
 
     public void update(int dx,int dy) {

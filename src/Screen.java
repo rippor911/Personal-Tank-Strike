@@ -7,6 +7,11 @@ public class Screen extends JFrame {
     private HomePanel homePanel;
     private GamePanel gamePanel;
 
+    private int tileSize = 48;
+    private int maxCol = 12;
+    private int maxRow = 9;
+    private int scale = 2;    
+
     public Screen() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
@@ -43,5 +48,23 @@ public class Screen extends JFrame {
             remove(homePanel);
         }
         setVisible(true);
+    }
+
+    //getter:
+
+    public int getTileSize() {
+        return tileSize;
+    }
+
+    public int getMaxCol() {
+        return maxCol;
+    }
+
+    public int getMaxRow() {
+        return maxRow;
+    }
+
+    public int scale() {
+        return scale;
     }
 }
