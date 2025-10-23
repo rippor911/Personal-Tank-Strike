@@ -18,7 +18,7 @@ public class User implements KeyListener {
     private GamePanel gp;
 
     public User(int x,int y,GamePanel gp) {
-        myTank = new Tank(x, y,gp.getHeight(),gp.getWidth(),gp.getTileSize());
+        myTank = new Tank(x, y,gp);
         dx = 0;
         dy = 0;
         this.gp = gp;

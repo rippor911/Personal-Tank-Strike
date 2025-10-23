@@ -17,8 +17,8 @@ public class TileManager {
         this.gp = gp;
         Random random = new Random();
         seed = Math.abs(random.nextInt()) % 2;
-        tiles = new Tile[gp.getMaxRow()][gp.getMaxCol()];
-        map = new int[gp.getMaxRow()][gp.getMaxCol()];
+        tiles = new Tile[gp.getMaxRow() + 5][gp.getMaxCol() + 5];   //add 5 to avoid going beyond
+        map = new int[gp.getMaxRow() + 5][gp.getMaxCol() + 5];
         //written = false;
     }
 

@@ -11,23 +11,22 @@ public class Tank {
     private int score;
     private int initHp = 3;
     private int initSpeed = 4;
+
     private Item item;
-    private int maxRow;
-    private int maxCol;
-    private int tileSize;
     private BufferedImage tankImage;
     private BufferedImage lastImage;
+    private GamePanel gp;
+    private int [][] map;
 
-    public Tank(int x,int y,int maxRow,int maxCol,int tileSize) {
+    public Tank(int x,int y,GamePanel gp) {
         this.x = x;
         this.y = y;
         score = 0;
         hp = initHp;
         speed = initSpeed;
         item = null;
-        this.maxRow = maxRow;
-        this.maxCol = maxCol;
-        this.tileSize = tileSize;
+        this.gp = gp;
+        this.map = gp.getMap();
         try {
             lastImage = ImageIO.read(getClass().getResource("/images/tankLeft.png"));
         } catch (IOException e) {
@@ -84,11 +83,37 @@ public class Tank {
     public boolean move(int dx,int dy) {
         //TO DO: wall check!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        //Frame
+        //Frame Check:
 
-        if (x + dx < 0 || x + dx > maxCol - tileSize || y + dy < 0 || y + dy > maxRow - tileSize) {
+        int nx = x + dx;
+        int ny = y + dy;
+
+        if (nx < 0 || nx > gp.getWidth() - gp.getTileSize()) {
             return false;
         }
+
+        if (ny < 0 || ny > gp.getHeight() - gp.getTileSize()) {
+            return false;
+        }
+
+        //Wall Check:
+
+        if (map[ny / gp.getTileSize()][nx / gp.getTileSize()] == 1) {
+            return false;
+        }
+
+        if (map[(ny + gp.getTileSize()) / gp.getTileSize()][nx / gp.getTileSize()] == 1) {
+            return false;
+        }
+
+        if (map[ny / gp.getTileSize()][(nx + gp.getTileSize()) / gp.getTileSize()] == 1) {
+            return false;
+        }
+
+        if (map[(ny + gp.getTileSize()) / gp.getTileSize()]
+            [(nx + gp.getTileSize()) / gp.getTileSize()] == 1) {
+            return false;
+        }        
 
         return true;
     }
