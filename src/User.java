@@ -3,6 +3,7 @@ import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 public class User implements KeyListener {
     
@@ -17,7 +18,7 @@ public class User implements KeyListener {
     private Tank myTank;
     private GamePanel gp;
 
-    public User(int x,int y,GamePanel gp) {
+    public User(int x,int y,GamePanel gp) throws IOException {
         myTank = new Tank(x, y,gp);
         dx = 0;
         dy = 0;
@@ -50,8 +51,6 @@ public class User implements KeyListener {
         if (shootPressed) {
             myTank.shoot();
         }
-        
-        System.out.println("(" + myTank.getX() + "," + myTank.getY() + ")");
 
     }
 

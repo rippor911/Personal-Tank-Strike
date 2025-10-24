@@ -4,89 +4,89 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
 public class Tank {
-    private int x;
-    private int y;
-    private int speed;
-    private int hp;
+    private int tankX;
+    private int tankY;
+    private int speed = 4;
+    private int bulletSpeed = 6;
+    private int hp = 3;
     private int score;
-    private int initHp = 3;
-    private int initSpeed = 4;
+    private int delta = 8;
+    private int bulletSpan = 300;
+    private int state;
 
     private Item item;
-    private BufferedImage tankImage;
-    private BufferedImage lastImage;
+    private BufferedImage [] tankImage;
     private GamePanel gp;
     private int [][] map;
+    private int fireCd;
 
-    public Tank(int x,int y,GamePanel gp) {
-        this.x = x;
-        this.y = y;
+    public Tank(int x,int y,GamePanel gp) throws IOException {
+        this.tankX = x;
+        this.tankY = y;
         score = 0;
-        hp = initHp;
-        speed = initSpeed;
         item = null;
         this.gp = gp;
         this.map = gp.getMap();
-        try {
-            lastImage = ImageIO.read(getClass().getResource("/images/tankLeft.png"));
-        } catch (IOException e) {
-            e.printStackTrace();
-            lastImage = null;
-        }
+        this.fireCd = 0;
+        
+        imageInit();
         
     }
 
     //image section:
 
-    public BufferedImage getTankImage(int dx,int dy) {
-        try {
+    public void imageInit() throws IOException {
 
-            if (dx == -speed && dy == 0) {
-                tankImage = ImageIO.read(getClass().getResource("/images/tankLeft.png"));
-            }
-            if (dx == -speed && dy == speed) {
-                tankImage = ImageIO.read(getClass().getResource("/images/tankLeftDown.png"));
-            }
-            if (dx == 0 && dy == speed) {
-                tankImage = ImageIO.read(getClass().getResource("/images/tankDown.png"));
-            }
-            if (dx == speed && dy == speed) {
-                tankImage = ImageIO.read(getClass().getResource("/images/tankRightDown.png"));
-            }
-            if (dx == speed && dy == 0) {
-                tankImage = ImageIO.read(getClass().getResource("/images/tankRight.png"));
-            }
-            if (dx == speed && dy == -speed) {
-                tankImage = ImageIO.read(getClass().getResource("/images/tankRightUp.png"));
-            }
-            if (dx == 0 && dy == -speed) {
-                tankImage = ImageIO.read(getClass().getResource("/images/tankUp.png"));
-            }
-            if (dx == -speed && dy == -speed) {
-                tankImage = ImageIO.read(getClass().getResource("/images/tankLeftUp.png"));
-            }
-            if (dx == 0 && dy == 0) {
-                tankImage = lastImage;
-            } else {
-                lastImage = tankImage;
-            }
-            
-            return tankImage;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+        state = 0;
+
+        tankImage = new BufferedImage[8];
+
+        tankImage[0] = ImageIO.read(getClass().getResource("/images/tankLeft.png"));
+        tankImage[1] = ImageIO.read(getClass().getResource("/images/tankLeftDown.png"));
+        tankImage[2] = ImageIO.read(getClass().getResource("/images/tankDown.png"));
+        tankImage[3] = ImageIO.read(getClass().getResource("/images/tankRightDown.png"));
+        tankImage[4] = ImageIO.read(getClass().getResource("/images/tankRight.png"));
+        tankImage[5] = ImageIO.read(getClass().getResource("/images/tankRightUp.png"));
+        tankImage[6] = ImageIO.read(getClass().getResource("/images/tankUp.png"));
+        tankImage[7] = ImageIO.read(getClass().getResource("/images/tankLeftUp.png"));
+    }
+
+    public BufferedImage getTankImage(int dx,int dy) {
+        if (dx == -speed && dy == 0) {
+            state = 0;
         }
+        if (dx == -speed && dy == speed) {
+            state = 1;
+        }
+        if (dx == 0 && dy == speed) {
+            state = 2;
+        }
+        if (dx == speed && dy == speed) {
+            state = 3;
+        }
+        if (dx == speed && dy == 0) {
+            state = 4;
+        }
+        if (dx == speed && dy == -speed) {
+            state = 5;
+        }
+        if (dx == 0 && dy == -speed) {
+            state = 6;
+        }
+        if (dx == -speed && dy == -speed) {
+            state = 7;
+        }
+        return tankImage[state];
     }
 
     //action section:
 
     public boolean move(int dx,int dy) {
-        //TO DO: wall check!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         //Frame Check:
 
-        int nx = x + dx;
-        int ny = y + dy;
+        int nx = tankX + dx;
+        int ny = tankY + dy;
 
         if (nx < 0 || nx > gp.getWidth() - gp.getTileSize()) {
             return false;
@@ -98,20 +98,22 @@ public class Tank {
 
         //Wall Check:
 
-        if (map[ny / gp.getTileSize()][nx / gp.getTileSize()] == 1) {
+        if (map[(ny + delta) / gp.getTileSize()][(nx + delta) / gp.getTileSize()] == 1) {
             return false;
         }
 
-        if (map[(ny + gp.getTileSize()) / gp.getTileSize()][nx / gp.getTileSize()] == 1) {
+        if (map[(ny + gp.getTileSize() - delta) / gp.getTileSize()]
+            [(nx + delta) / gp.getTileSize()] == 1) {
             return false;
         }
 
-        if (map[ny / gp.getTileSize()][(nx + gp.getTileSize()) / gp.getTileSize()] == 1) {
+        if (map[(ny + delta) / gp.getTileSize()]
+            [(nx + gp.getTileSize() - delta) / gp.getTileSize()] == 1) {
             return false;
         }
 
-        if (map[(ny + gp.getTileSize()) / gp.getTileSize()]
-            [(nx + gp.getTileSize()) / gp.getTileSize()] == 1) {
+        if (map[(ny + gp.getTileSize() - delta) / gp.getTileSize()]
+            [(nx + gp.getTileSize() - delta) / gp.getTileSize()] == 1) {
             return false;
         }        
 
@@ -119,12 +121,64 @@ public class Tank {
     }
 
     public void shoot() {
-        System.out.println("Fire!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        if (fireCd == 0) {
+            System.out.println("Fire!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            this.fireCd = 20;            
+
+            switch (state) {
+                case 0://Left
+                    gp.getBulletManager().shootAction(tankX,tankY + gp.getTileSize() / 2,
+                        -bulletSpeed,0,bulletSpan);
+                    break;
+
+                case 1://LeftDown
+                    gp.getBulletManager().shootAction(tankX,tankY + gp.getTileSize(),
+                        -bulletSpeed,bulletSpeed,bulletSpan);
+                    break;
+                    
+                case 2:
+
+                    gp.getBulletManager().shootAction(tankX + gp.getTileSize() / 2
+                        , tankY + gp.getTileSize(), 0, bulletSpeed,bulletSpan);
+                    break; 
+                    
+                case 3:
+                    gp.getBulletManager().shootAction(tankX + gp.getTileSize(), 
+                        tankY + gp.getTileSize(), bulletSpeed, bulletSpeed,bulletSpan);
+                    break; 
+                    
+                case 4:
+                    gp.getBulletManager().shootAction(tankX + gp.getTileSize(), 
+                        tankY + gp.getTileSize() / 2, bulletSpeed, 0,bulletSpan);
+                    break; 
+                    
+                case 5:
+                    gp.getBulletManager().shootAction(tankX + gp.getTileSize(), 
+                        tankY, bulletSpeed, -bulletSpeed,bulletSpan);
+                    break; 
+                    
+                case 6:
+                    gp.getBulletManager().shootAction(tankX + gp.getTileSize() / 2,
+                        tankY, 0, -bulletSpeed,bulletSpan);
+                    break; 
+                    
+                case 7:
+                    gp.getBulletManager().shootAction(tankX, tankY, -bulletSpeed, 
+                        -bulletSpeed,bulletSpan);
+                    break;                     
+            
+                default:
+                    break;
+            }
+        }
     }
 
     public void update(int dx,int dy) {
-        x += dx;
-        y += dy;
+        tankX += dx;
+        tankY += dy;
+        if (fireCd > 0) {
+            fireCd -= 1;
+        }
     }
 
     //getter:
@@ -138,11 +192,15 @@ public class Tank {
     }
 
     public int getX() {
-        return x;
+        return tankX;
     }
 
     public int getY() {
-        return y;
-    }    
+        return tankY;
+    }
+
+    public int getHp() {
+        return hp;
+    }
 
 }

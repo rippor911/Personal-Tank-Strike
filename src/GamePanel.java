@@ -21,6 +21,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     private User user = null;
     private TileManager tm = null;
+    private BulletManager bm = null;
 
     public GamePanel(Screen screen) throws IOException {
 
@@ -37,9 +38,7 @@ public class GamePanel extends JPanel implements Runnable {
         tm = new TileManager(this);
         tm.buildMap();
         map = tm.getMap();
-
-        user = new User(100,100,this);   //warning : to do random logic
-        this.addKeyListener(user);        
+        bm = new BulletManager(this);
 
         this.setPreferredSize(new Dimension(width,height));
         this.setBackground(Color.white);
@@ -57,13 +56,14 @@ public class GamePanel extends JPanel implements Runnable {
                 }
             }
         });
-        
-        startGameThread();
+
     }
 
     //Game Page
 
-    public void startGameThread() {
+    public void startGameThread() throws IOException {
+        user = new User(100,100,this);   //warning : to do random logic
+        this.addKeyListener(user);         
         gameThread = new Thread(this);
         gameThread.start();
     }
@@ -109,6 +109,8 @@ public class GamePanel extends JPanel implements Runnable {
         tm.update();
 
         user.update();
+
+        bm.update();
         
     }
 
@@ -121,6 +123,13 @@ public class GamePanel extends JPanel implements Runnable {
         tm.draw(g2);
 
         user.draw(g2);
+
+        try {
+            bm.draw(g2);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         g2.dispose();
     }
@@ -149,5 +158,13 @@ public class GamePanel extends JPanel implements Runnable {
 
     public int [][] getMap() {
         return map;
+    }
+
+    public int getFps() {
+        return fps;
+    }
+
+    public BulletManager getBulletManager() {
+        return bm;
     }
 }
