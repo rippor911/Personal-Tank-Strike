@@ -2,7 +2,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.KeyListener;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
@@ -19,9 +21,11 @@ public class GamePanel extends JPanel implements Runnable {
     private Thread gameThread;
     private Screen window;
 
-    private User user = null;
     private TileManager tm = null;
     private BulletManager bm = null;
+
+    private ArrayList<Tank> tankSet;
+    private ArrayList<TankPanel> userSet;
 
     public GamePanel(Screen screen) throws IOException {
 
@@ -31,7 +35,7 @@ public class GamePanel extends JPanel implements Runnable {
         scale = screen.scale();
 
         width = tileSize * maxCol * scale;
-        height = tileSize * maxRow * scale;
+        height = tileSize * maxRow * scale;        
 
         this.window = screen;
         
@@ -39,6 +43,9 @@ public class GamePanel extends JPanel implements Runnable {
         tm.buildMap();
         map = tm.getMap();
         bm = new BulletManager(this);
+
+        tankSet = new ArrayList<>();
+        userSet = new ArrayList<>();
 
         this.setPreferredSize(new Dimension(width,height));
         this.setBackground(Color.white);
@@ -61,9 +68,21 @@ public class GamePanel extends JPanel implements Runnable {
 
     //Game Page
 
+    public void createTank() throws IOException {
+        userSet.add(new User(9 * tileSize + 10
+                ,16 * tileSize,this));    //warning : to do random logic
+
+        for (TankPanel tp : userSet) {
+            tankSet.add(tp.getTank());
+            if (tp instanceof KeyListener) {
+                this.addKeyListener((KeyListener)tp);
+            }
+        }
+        
+    }
+
     public void startGameThread() throws IOException {
-        user = new User(100,100,this);   //warning : to do random logic
-        this.addKeyListener(user);         
+        createTank();        
         gameThread = new Thread(this);
         gameThread.start();
     }
@@ -108,7 +127,9 @@ public class GamePanel extends JPanel implements Runnable {
 
         tm.update();
 
-        user.update();
+        for (TankPanel user : userSet) {
+            user.update();
+        }
 
         bm.update();
         
@@ -122,7 +143,9 @@ public class GamePanel extends JPanel implements Runnable {
 
         tm.draw(g2);
 
-        user.draw(g2);
+        for (TankPanel user : userSet) {
+            user.draw(g2);
+        }        
 
         try {
             bm.draw(g2);

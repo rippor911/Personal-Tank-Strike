@@ -173,6 +173,13 @@ public class Tank {
         }
     }
 
+    public void beingShot() {
+        hp -= 1;
+        if (hp == 0) {
+            gp.endGame();
+        }
+    }
+
     public void update(int dx,int dy) {
         tankX += dx;
         tankY += dy;

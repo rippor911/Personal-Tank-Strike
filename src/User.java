@@ -5,7 +5,7 @@ import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-public class User implements KeyListener {
+public class User implements KeyListener,TankPanel {
     
     private boolean upPressed;
     private boolean leftPressed;
@@ -138,4 +138,9 @@ public class User implements KeyListener {
         return downPressed;
     }    
     
+    //getter:
+
+    public Tank getTank() {
+        return myTank;
+    }
 }
