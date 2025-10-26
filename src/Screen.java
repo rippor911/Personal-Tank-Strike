@@ -6,6 +6,7 @@ public class Screen extends JFrame {
 
     private HomePanel homePanel;
     private GamePanel gamePanel;
+    private EndPanel endPanel;
 
     private int tileSize = 48;
     private int maxCol = 24;
@@ -24,6 +25,7 @@ public class Screen extends JFrame {
         setVisible(true);
 
         gamePanel = null;
+        endPanel = null;
 
         pack();
 
@@ -32,11 +34,14 @@ public class Screen extends JFrame {
         setVisible(true);
     }
 
+    //JPanel manager:
+
     void build() {
         homePanel = new HomePanel(this);
         add(homePanel);
-        if (gamePanel != null) {
-            remove(gamePanel);
+        if (endPanel != null) {
+            remove(endPanel);
+            endPanel = null;
         }
         setVisible(true);       
     }
@@ -47,8 +52,24 @@ public class Screen extends JFrame {
         gamePanel.startGameThread();
         if (homePanel != null) {
             remove(homePanel);
+            homePanel = null;
         }
         setVisible(true);
+    }
+
+    void endGame(String winner) throws InterruptedException {
+        if (gamePanel != null) {
+            remove(gamePanel);
+            gamePanel = null;
+        }
+
+        EndPanel ep = new EndPanel(this, winner);
+        this.add(ep);
+        this.setVisible(true);
+
+        Thread.sleep(3000);
+
+        this.build();
     }
 
     //getter:

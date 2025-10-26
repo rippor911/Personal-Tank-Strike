@@ -17,6 +17,7 @@ public class GamePanel extends JPanel implements Runnable {
     private int height;
     private int fps = 60;
     private int [][] map;
+    private boolean gameState;
 
     private Thread gameThread;
     private Screen window;
@@ -68,9 +69,15 @@ public class GamePanel extends JPanel implements Runnable {
 
     //Game Page
 
-    public void createTank() throws IOException {
-        userSet.add(new User(9 * tileSize + 10
-                ,16 * tileSize,this));    //warning : to do random logic
+    public void createTankPvp() throws IOException {
+
+        //TODO You need a better user logic.
+
+        userSet.add(new User(0 * tileSize + 10
+                ,0 * tileSize + 15,this));    //warning : to do random logic
+
+        userSet.add(new User2(23 * tileSize - 5
+                ,16 * tileSize - 5,this));       //warning : to do random logic        
 
         for (TankPanel tp : userSet) {
             tankSet.add(tp.getTank());
@@ -82,7 +89,8 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void startGameThread() throws IOException {
-        createTank();        
+        createTankPvp();        
+        gameState = true;
         gameThread = new Thread(this);
         gameThread.start();
     }
@@ -92,11 +100,24 @@ public class GamePanel extends JPanel implements Runnable {
         
         System.out.println("Game Over.");
         
-        /*try {
-            window.build();
-        } catch (Exception e) {
+        gameState = false;
+
+        String winner = null;
+        char i = '0';
+        
+        for (TankPanel user : userSet) {
+            i += 1;
+            if (user.getTank().getHp() > 0) {
+                winner = "Player " + i;
+            }
+        }        
+
+        try {
+            window.endGame(winner);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
-        }*/
+        }
     }
 
     @Override
@@ -105,7 +126,10 @@ public class GamePanel extends JPanel implements Runnable {
         double drawInterval = 1000000000 / fps; //1s = 10^9 ns
         double nextDrawTime = System.nanoTime() + drawInterval;
         while (gameThread != null) {
-            
+
+            if (!gameState) {
+                break;
+            }
             // update information
             update();
 
@@ -131,8 +155,17 @@ public class GamePanel extends JPanel implements Runnable {
 
         tm.update();
 
+        int cnt = 0;
+
         for (TankPanel user : userSet) {
             user.update();
+            if (user.getTank().getHp() > 0) {
+                cnt += 1;
+            }
+        }
+
+        if (cnt <= 1) {
+            this.endGame();
         }
 
         bm.update();
@@ -196,5 +229,9 @@ public class GamePanel extends JPanel implements Runnable {
 
     public ArrayList<Tank> getTankSet() {
         return tankSet;
+    }
+
+    public Screen getWindow() {
+        return window;
     }
 }

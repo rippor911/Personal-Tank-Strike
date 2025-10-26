@@ -8,7 +8,7 @@ public class Tank {
     private int tankY;
     private int speed = 4;
     private int bulletSpeed = 6;
-    private int hp = 3;
+    private int hp = 5;
     private int score;
     private int delta = 8;
     private int bulletSpan = 300;
@@ -127,7 +127,6 @@ public class Tank {
 
     public void shoot() {
         if (fireCd == 0) {
-            System.out.println("Fire!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             this.fireCd = 20;            
 
             switch (state) {
