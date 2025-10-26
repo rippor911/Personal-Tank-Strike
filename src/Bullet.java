@@ -1,6 +1,7 @@
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
@@ -12,6 +13,9 @@ public class Bullet {
     private int vy;
     private int bornTime;
     private int standTime;
+    private int shootInterval = 2;
+    private int explosionTime = 10;
+    private boolean explosionFlag;
     private GamePanel gp;
     private int [][] map;
     private int tagX;
@@ -25,23 +29,39 @@ public class Bullet {
         this.gp = gp;
         standTime = st;
         bornTime = bt;
+        explosionFlag = false;
         this.map = gp.getMap();
     }
 
     public void move() {
-        if (canMove(bulletX + vx,bulletY + vy)) {
-            bulletX += vx;
-            bulletY += vy;
-            tagX = -1000;
-            tagY = -1000;
-        }
-        else {
-            reverse(bulletX,bulletY);
-            if (bulletX == tagX && bulletY == tagY) {
-                standTime = -1;
+        if (explosionFlag == false) {
+            if (canMove(bulletX + vx,bulletY + vy)) {
+                bulletX += vx;
+                bulletY += vy;
+                tagX = -1000;
+                tagY = -1000;
             }
-            tagX = bulletX;
-            tagY = bulletY;
+            else {
+                reverse(bulletX,bulletY);
+                if (bulletX == tagX && bulletY == tagY) {
+                    standTime = -1;
+                }
+                tagX = bulletX;
+                tagY = bulletY;
+            }            
+        }
+    }
+
+    public void goal(int now) {
+        if (Math.abs(now - bornTime) >= shootInterval) {
+            ArrayList<Tank> set = gp.getTankSet();
+            for (Tank tk : set) {
+                if (explosionFlag == false && tk.touchBullet(bulletX, bulletY)) {
+                    tk.beingShot();
+                    bornTime = now - standTime + explosionTime; 
+                    explosionFlag = true;
+                }
+            }
         }
     }
 
@@ -84,9 +104,14 @@ public class Bullet {
     //Draw:
 
     public void draw(Graphics2D g2) throws IOException {
-
-        BufferedImage img = ImageIO.read(getClass().getResource("/images/bullet.png"));
-
-        g2.drawImage(img, bulletX, bulletY,gp.getTileSize() / 4,gp.getTileSize() / 4, null);
+        BufferedImage img;
+        if (explosionFlag == false) {
+            img = ImageIO.read(getClass().getResource("/images/bullet.png"));
+            g2.drawImage(img, bulletX, bulletY,gp.getTileSize() / 4,gp.getTileSize() / 4, null);
+        }
+        else {
+            img = ImageIO.read(getClass().getResource("/images/explosion.png"));
+            g2.drawImage(img, bulletX, bulletY,gp.getTileSize(),gp.getTileSize(), null);
+        }
     }
 }

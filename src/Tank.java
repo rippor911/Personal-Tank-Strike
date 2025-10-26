@@ -120,6 +120,11 @@ public class Tank {
         return true;
     }
 
+    public boolean touchBullet(int x,int y) {
+        return (tankX + delta <= x && x <= tankX + gp.getTileSize() - delta 
+            && tankY + delta <= y && y <= tankY + gp.getTileSize() - delta);
+    }
+
     public void shoot() {
         if (fireCd == 0) {
             System.out.println("Fire!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -175,7 +180,7 @@ public class Tank {
 
     public void beingShot() {
         hp -= 1;
-        if (hp == 0) {
+        if (hp <= 0) {
             gp.endGame();
         }
     }

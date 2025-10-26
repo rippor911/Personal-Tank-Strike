@@ -88,11 +88,15 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void endGame() {
-        try {
+        // TODO complete endGame
+        
+        System.out.println("Game Over.");
+        
+        /*try {
             window.build();
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     @Override
@@ -150,7 +154,6 @@ public class GamePanel extends JPanel implements Runnable {
         try {
             bm.draw(g2);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -189,5 +192,9 @@ public class GamePanel extends JPanel implements Runnable {
 
     public BulletManager getBulletManager() {
         return bm;
+    }
+
+    public ArrayList<Tank> getTankSet() {
+        return tankSet;
     }
 }

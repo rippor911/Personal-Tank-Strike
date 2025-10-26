@@ -33,6 +33,7 @@ public class BulletManager {
                     iterator.remove(); 
                 } else {
                     bullet.move();
+                    bullet.goal(timeStamp);
                 }
             }
         }
