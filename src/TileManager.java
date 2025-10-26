@@ -23,7 +23,7 @@ public class TileManager {
     }
 
     public void buildMap() throws IOException {
-        String url = "/map/map" + ((char)(9 + '0')) + ".txt";
+        String url = "/map/map" + ((char)(seed + '0')) + ".txt";
         try {
             InputStream is = getClass().getResourceAsStream(url);
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
