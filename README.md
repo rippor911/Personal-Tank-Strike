@@ -1,19 +1,29 @@
-# Personal-Tank-Strike
+# 坦克动荡
 
-In order to create soft Tank Strike game.
+Java 课期末设计作业，欢迎指导
 
-## Tools
+## 玩法
+
+目前仅支持单机双人模式，
+
+player 1:WASD 对应上左下右，空格发射
+
+player 2:↑←↓→ 对应上左下右，回车键发射
+
+子弹可反弹，每个坦克有 5 滴血
+
+只剩一辆坦克时游戏结束，该坦克胜利，结算页面持续3s后回到主页面
+
+## 工具
 
 VS Code、Java
 
-## Methods
+## 方法
 
-use 48 pixel * 48 pixel as a unit
+以 48 像素 * 48 像素为一个单元
 
-the window frame extends JFrame
+使用 $2,304(48 * 16 * 3) * 1728(48 * 12 * 3)$ 大小的窗口.
 
-we use $2,304(48 * 16 * 3) * 1728(48 * 12 * 3)$ sized window.
+## 资源
 
-## Resource
-
-all pictures are from [opengameart](https://opengameart.org/)
+所有的图片来自 [opengameart](https://opengameart.org/)
