@@ -13,6 +13,8 @@ public class Bullet {
     private int bornTime;
     private int standTime;
     private GamePanel gp;
+    private int [][] map;
+    
     
     public Bullet(int x,int y,int vx,int vy,GamePanel gp,int bt,int st) {
         bulletX = x;
@@ -22,6 +24,7 @@ public class Bullet {
         this.gp = gp;
         standTime = st;
         bornTime = bt;
+        this.map = gp.getMap();
     }
 
     public void move() {
@@ -30,7 +33,7 @@ public class Bullet {
             bulletY += vy;
         }
         else {
-            reverse();
+            reverse(bulletX,bulletY);
         }
     }
 
@@ -39,11 +42,35 @@ public class Bullet {
     }
 
     public boolean canMove(int nx,int ny) {
+        int hw= gp.getTileSize()/8;
+        int centerX = nx + hw;
+        int centerY = ny + hw;
+        if(map[centerY / gp.getTileSize()][centerX / gp.getTileSize()] == 1) {
+            return false;
+        }
+        if (nx < 0 || nx > gp.getWidth() - gp.getTileSize()/4) {
+            return false;
+        }
+
+        if (ny < 0 || ny > gp.getHeight() - gp.getTileSize()/4) {
+            return false;
+        }
+        
         return true;
     }
 
-    public void reverse() {
-
+    public void reverse(int nx,int ny) {
+        if (canMove(nx+vx,ny)&&!canMove(nx,ny+vy)) {
+            vy = -vy;
+        }
+        if (!canMove(nx+vx,ny)&&canMove(nx,ny+vy)) {
+            vx = -vx;
+        }
+        if(!canMove(nx+vx,ny)&&!canMove(nx,ny+vy)) {
+            vx = -vx;
+            vy = -vy;
+        }
+        
     }
 
     //Draw:
