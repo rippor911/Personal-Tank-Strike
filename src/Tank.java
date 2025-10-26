@@ -128,7 +128,7 @@ public class Tank {
     public void shoot() {
         if (fireCd == 0) {
             System.out.println("Fire!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            this.fireCd = 30;            
+            this.fireCd = 20;            
 
             switch (state) {
                 case 0://Left

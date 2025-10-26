@@ -20,6 +20,9 @@ public class Bullet {
     private int [][] map;
     private int tagX;
     private int tagY;
+
+    private BufferedImage imgExplosion;
+    private BufferedImage imgBullet;
     
     public Bullet(int x,int y,int vx,int vy,GamePanel gp,int bt,int st) {
         bulletX = x;
@@ -31,6 +34,21 @@ public class Bullet {
         bornTime = bt;
         explosionFlag = false;
         this.map = gp.getMap();
+
+        initImg();
+    }
+
+    public void initImg() {
+        try {
+            imgBullet = ImageIO.read(getClass().getResource("/images/bullet.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            imgExplosion = ImageIO.read(getClass().getResource("/images/explosion.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }        
     }
 
     public void move() {
@@ -53,10 +71,10 @@ public class Bullet {
     }
 
     public void goal(int now) {
-        if (Math.abs(now - bornTime) >= shootInterval) {
+        if (Math.abs(now - bornTime) >= shootInterval && explosionFlag == false) {
             ArrayList<Tank> set = gp.getTankSet();
             for (Tank tk : set) {
-                if (explosionFlag == false && tk.touchBullet(bulletX, bulletY)) {
+                if (tk.touchBullet(bulletX, bulletY)) {
                     tk.beingShot();
                     bornTime = now - standTime + explosionTime; 
                     explosionFlag = true;
@@ -103,15 +121,13 @@ public class Bullet {
 
     //Draw:
 
-    public void draw(Graphics2D g2) throws IOException {
-        BufferedImage img;
+    public void draw(Graphics2D g2) {
         if (explosionFlag == false) {
-            img = ImageIO.read(getClass().getResource("/images/bullet.png"));
-            g2.drawImage(img, bulletX, bulletY,gp.getTileSize() / 4,gp.getTileSize() / 4, null);
+            g2.drawImage(imgBullet, bulletX, bulletY
+                ,gp.getTileSize() / 4,gp.getTileSize() / 4, null);
         }
         else {
-            img = ImageIO.read(getClass().getResource("/images/explosion.png"));
-            g2.drawImage(img, bulletX, bulletY,gp.getTileSize(),gp.getTileSize(), null);
+            g2.drawImage(imgExplosion, bulletX, bulletY,gp.getTileSize(),gp.getTileSize(), null);
         }
     }
 }
