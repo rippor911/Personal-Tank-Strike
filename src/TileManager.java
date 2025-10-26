@@ -16,14 +16,14 @@ public class TileManager {
     public TileManager(GamePanel gp) throws IOException {
         this.gp = gp;
         Random random = new Random();
-        seed = Math.abs(random.nextInt()) % 2;
+        seed = Math.abs(random.nextInt()) % 10;
         tiles = new Tile[gp.getMaxRow() + 5][gp.getMaxCol() + 5];   //add 5 to avoid going beyond
         map = new int[gp.getMaxRow() + 5][gp.getMaxCol() + 5];
         //written = false;
     }
 
     public void buildMap() throws IOException {
-        String url = "/map/map" + ((char)(seed + '0')) + ".txt";
+        String url = "/map/map" + ((char)(0 + '0')) + ".txt";
         try {
             InputStream is = getClass().getResourceAsStream(url);
             BufferedReader br = new BufferedReader(new InputStreamReader(is));

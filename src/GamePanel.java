@@ -7,10 +7,10 @@ import java.io.IOException;
 import javax.swing.JPanel;
 
 public class GamePanel extends JPanel implements Runnable {
-    private int tileSize = 48;
-    private int maxCol = 16;
-    private int maxRow = 12;
-    private int scale = 3;
+    private int tileSize;
+    private int maxCol;
+    private int maxRow;
+    private int scale;
     private int width;
     private int height;
     private int fps = 60;
