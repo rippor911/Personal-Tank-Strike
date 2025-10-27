@@ -12,7 +12,7 @@ public class Wall implements Tile {
     public Wall(int x,int y) throws IOException {
         this.tx = x;
         this.ty = y;
-        this.image = ImageIO.read(getClass().getResource("images/wall.png"));
+        this.image = ImageIO.read(getClass().getResource("/images/wall.png"));
     }
 
     @Override

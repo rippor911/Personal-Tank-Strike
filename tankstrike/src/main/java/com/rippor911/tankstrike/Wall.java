@@ -1,18 +1,20 @@
+package com.rippor911.tankstrike;
+
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-public class Grass implements Tile {
+public class Wall implements Tile {
 
     private int tx;
     private int ty;
     private BufferedImage image;
     
-    public Grass(int x,int y) throws IOException {
+    public Wall(int x,int y) throws IOException {
         this.tx = x;
         this.ty = y;
-        this.image = ImageIO.read(getClass().getResource("/images/grass.png"));
+        this.image = ImageIO.read(getClass().getResource("/images/wall.png"));
     }
 
     @Override

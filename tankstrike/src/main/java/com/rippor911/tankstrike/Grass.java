@@ -1,3 +1,5 @@
+package com.rippor911.tankstrike;
+
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
