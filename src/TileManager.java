@@ -10,16 +10,22 @@ public class TileManager {
     private GamePanel gp;
     private long seed;
     private int [][] map;
-    private Tile [][] tiles;
+    private BufferedImage [] images;
     //private boolean written;
 
     public TileManager(GamePanel gp) throws IOException {
         this.gp = gp;
         Random random = new Random();
-        seed = Math.abs(random.nextInt()) % 3;
-        tiles = new Tile[gp.getMaxRow() + 5][gp.getMaxCol() + 5];   //add 5 to avoid going beyond
-        map = new int[gp.getMaxRow() + 5][gp.getMaxCol() + 5];
-        //written = false;
+        seed = Math.abs(random.nextInt()) % 3;  
+        map = new int[gp.getMaxRow() + 5][gp.getMaxCol() + 5];   //add 5 to avoid going beyond
+        images = new BufferedImage[5];
+
+        initImages();
+    }
+
+    public void initImages() {
+        images[0] = ImageLoader.getImage(0);
+        images[1] = ImageLoader.getImage(1);
     }
 
     public void buildMap() throws IOException {
@@ -34,11 +40,6 @@ public class TileManager {
                 String str = br.readLine();
                 for (int col = 0; col < gp.getMaxCol(); col += 1) {
                     map[row][col] = (int)(str.charAt(2 * col) - '0');
-                    if (map[row][col] == 1) {
-                        tiles[row][col] = new Wall(col * gp.getTileSize(), row * gp.getTileSize());
-                    } else {
-                        tiles[row][col] = new Grass(col * gp.getTileSize(), row * gp.getTileSize());
-                    }
                 }
             }
         } catch (Exception e) {
@@ -57,10 +58,10 @@ public class TileManager {
         for (int row = 0; row < gp.getMaxRow(); row += 1) {
             for (int col = 0; col < gp.getMaxCol(); col += 1) {
 
-                BufferedImage img = tiles[row][col].getImage();
+                BufferedImage img = images[map[row][col]];
 
                 try {
-                    g2.drawImage(img,tiles[row][col].getX(),tiles[row][col].getY()
+                    g2.drawImage(img,col * gp.getTileSize(),row * gp.getTileSize()
                         ,gp.getTileSize(),gp.getTileSize(),null);                         
                 } catch (Exception e) {
                     e.printStackTrace();
