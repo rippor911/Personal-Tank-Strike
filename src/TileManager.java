@@ -11,7 +11,6 @@ public class TileManager {
     private long seed;
     private int [][] map;
     private BufferedImage [] images;
-    //private boolean written;
 
     public TileManager(GamePanel gp) throws IOException {
         this.gp = gp;
@@ -20,12 +19,14 @@ public class TileManager {
         map = new int[gp.getMaxRow() + 5][gp.getMaxCol() + 5];   //add 5 to avoid going beyond
         images = new BufferedImage[5];
 
-        initImages();
+        int tileTypeNum = 2;
+        initImages(tileTypeNum);            //Load Images
     }
 
-    public void initImages() {
-        images[0] = ImageLoader.getImage(0);
-        images[1] = ImageLoader.getImage(1);
+    public void initImages(int n) {
+        for (int i = 0; i < n; i += 1) {
+            images[i] = ImageLoader.getImage(i);
+        }
     }
 
     public void buildMap() throws IOException {
@@ -52,9 +53,6 @@ public class TileManager {
     }
 
     public void draw(Graphics2D g2) {
-        /*if (written) {
-            return;
-        }*/
         for (int row = 0; row < gp.getMaxRow(); row += 1) {
             for (int col = 0; col < gp.getMaxCol(); col += 1) {
 
@@ -68,7 +66,6 @@ public class TileManager {
                 }
             }        
         }
-        //written = true;
     }
 
     //getter:
