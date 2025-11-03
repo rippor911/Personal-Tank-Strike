@@ -52,28 +52,28 @@ public class Tank {
     }
 
     public BufferedImage getTankImage(int dx,int dy) {
-        if (dx == -speed && dy == 0) {
+        if (dx < 0 && dy == 0) {
             state = 0;
         }
-        if (dx == -speed && dy == speed) {
+        if (dx < 0 && dy > 0) {
             state = 1;
         }
-        if (dx == 0 && dy == speed) {
+        if (dx == 0 && dy > 0) {
             state = 2;
         }
-        if (dx == speed && dy == speed) {
+        if (dx < 0 && dy > 0) {
             state = 3;
         }
-        if (dx == speed && dy == 0) {
+        if (dx > 0 && dy == 0) {
             state = 4;
         }
-        if (dx == speed && dy == -speed) {
+        if (dx > 0 && dy < 0)  {
             state = 5;
         }
-        if (dx == 0 && dy == -speed) {
+        if (dx == 0 && dy < 0)  {
             state = 6;
         }
-        if (dx == -speed && dy == -speed) {
+        if (dx < 0 && dy < 0) {
             state = 7;
         }
         return tankImage[state];

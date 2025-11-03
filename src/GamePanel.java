@@ -79,6 +79,8 @@ public class GamePanel extends JPanel implements Runnable {
         userSet.add(new User2(23 * tileSize - 5
                 ,16 * tileSize - 5,this));       //warning : to do random logic        
 
+        userSet.add(new UserAI(2 * tileSize + 10
+                ,16 * tileSize - 5,this));       //warning : to do random logic
         for (TankPanel tp : userSet) {
             tankSet.add(tp.getTank());
             if (tp instanceof KeyListener) {
