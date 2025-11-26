@@ -1,21 +1,14 @@
 import java.awt.Graphics2D;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Random;
 import java.awt.image.BufferedImage;
 
 public class TileManager {
     private GamePanel gp;
-    private long seed;
     private int [][] map;
     private BufferedImage [] images;
 
     public TileManager(GamePanel gp) throws IOException {
         this.gp = gp;
-        Random random = new Random();
-        seed = Math.abs(random.nextInt()) % 3;  
         map = new int[gp.getMaxRow() + 5][gp.getMaxCol() + 5];   //add 5 to avoid going beyond
         images = new BufferedImage[5];
 
@@ -30,22 +23,7 @@ public class TileManager {
     }
 
     public void buildMap() throws IOException {
-        char chooseId = (char)(seed + '0');
-        System.out.println("choose map :" + chooseId);
-        String url = "/map/map" + chooseId + ".txt";
-        try {
-            InputStream is = getClass().getResourceAsStream(url);
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-
-            for (int row = 0; row < gp.getMaxRow(); row += 1) {
-                String str = br.readLine();
-                for (int col = 0; col < gp.getMaxCol(); col += 1) {
-                    map[row][col] = (int)(str.charAt(2 * col) - '0');
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        map = MazeGenerator.generateMap(gp.getMaxRow(), gp.getMaxCol());
     }
 
     public void update() {

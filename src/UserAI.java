@@ -61,7 +61,8 @@ public class UserAI implements TankPanel {
         BufferedImage tankImage = myTank.getTankImage(dx, dy);
 
         if (tankImage != null) {
-            g2.drawImage(tankImage, myTank.getX(), myTank.getY(), gp.getTileSize(), gp.getTileSize(), null);
+            g2.drawImage(tankImage, myTank.getX(), myTank.getY(), 
+                gp.getTileSize(), gp.getTileSize(), null);
 
         } else {
             g2.setColor(Color.red);
@@ -70,8 +71,9 @@ public class UserAI implements TankPanel {
     }
 
     private Tank findTargetTank() {
-        if (gp.getTankSet() == null)
+        if (gp.getTankSet() == null) {
             return null;
+        }
         for (Tank tank : gp.getTankSet()) {
             if (tank != myTank && tank.getHp() > 0) {
                 return tank;
@@ -84,15 +86,15 @@ public class UserAI implements TankPanel {
         int tileSize = gp.getTileSize();
         int targetGridX = targetTank.getX() / tileSize;
         int targetGridY = targetTank.getY() / tileSize;
-        int targetPixelX = targetGridX * tileSize;
-        int targetPixelY = targetGridY * tileSize;
-
-        int currentX = myTank.getX();
-        int currentY = myTank.getY();
         int tankSpeed = myTank.getSpeed() / 2;
 
         dx = 0;
         dy = 0;
+
+        int targetPixelX = targetGridX * tileSize;
+        int targetPixelY = targetGridY * tileSize;
+        int currentX = myTank.getX();
+        int currentY = myTank.getY();        
 
         if (currentX < targetPixelX - tankSpeed) {
             dx = tankSpeed;
@@ -132,14 +134,16 @@ public class UserAI implements TankPanel {
 
     private void randomMoveWithAvoidWall() {
         int tileSize = gp.getTileSize();
-        int targetPixelX = randomTargetGridX * tileSize;
-        int targetPixelY = randomTargetGridY * tileSize;
-        int currentX = myTank.getX();
-        int currentY = myTank.getY();
+
         int tankSpeed = myTank.getSpeed();
 
         dx = 0;
         dy = 0;
+
+        int targetPixelX = randomTargetGridX * tileSize;
+        int targetPixelY = randomTargetGridY * tileSize;
+        int currentX = myTank.getX();
+        int currentY = myTank.getY();        
 
         if (currentX < targetPixelX - tankSpeed) {
             dx = tankSpeed;

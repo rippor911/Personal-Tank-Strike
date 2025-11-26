@@ -2,9 +2,11 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 
 import javax.swing.JPanel;
 
@@ -69,18 +71,56 @@ public class GamePanel extends JPanel implements Runnable {
 
     //Game Page
 
+    public Point getSafePoint(int quadrant) {
+
+        int rows = map.length;
+        int cols = map[0].length;
+        Random rand = new Random();
+        
+        int startR = 0;
+        int endR = rows;
+        int startC = 0;
+        int endC = cols;
+        
+        if (quadrant == 1) { 
+            endR = rows / 2; 
+            endC = cols / 2;
+        }
+        if (quadrant == 2) { 
+            endR = rows / 2; 
+            startC = cols / 2;
+        }
+        if (quadrant == 3) { 
+            startR = rows / 2;
+            endC = cols / 2; 
+        }
+        if (quadrant == 4) {
+            startR = rows / 2; 
+            startC = cols / 2; 
+        }
+
+        while (true) {
+
+            int r = rand.nextInt(endR - startR) + startR;
+            int c = rand.nextInt(endC - startC) + startC;
+
+            if (map[r][c] == 0) {
+                int pixelX = c * tileSize + 2; 
+                int pixelY = r * tileSize + 2;
+                return new Point(pixelX, pixelY);
+            }
+        }
+    }
+
     public void createTankPvp() throws IOException {
 
-        //TODO You need a better user logic.
+        Point p1 = getSafePoint(1);
+        Point p2 = getSafePoint(4);
 
-        userSet.add(new User(0 * tileSize + 10
-                ,0 * tileSize + 15,this));    //warning : to do random logic
+        userSet.add(new User(p1.x,p1.y,this));         
 
-        userSet.add(new User2(23 * tileSize - 5
-                ,16 * tileSize - 5,this));       //warning : to do random logic        
+        userSet.add(new UserAI(p2.x,p2.y,this));
 
-        userSet.add(new UserAI(2 * tileSize + 10
-                ,16 * tileSize - 5,this));       //warning : to do random logic
         for (TankPanel tp : userSet) {
             tankSet.add(tp.getTank());
             if (tp instanceof KeyListener) {
@@ -89,6 +129,24 @@ public class GamePanel extends JPanel implements Runnable {
         }
         
     }
+
+    public void createTankPve() throws IOException {
+
+        Point p1 = getSafePoint(1);
+        Point p2 = getSafePoint(4);
+
+        userSet.add(new User(p1.x,p1.y,this));
+
+        userSet.add(new User2(p2.x,p2.y,this));      
+
+        for (TankPanel tp : userSet) {
+            tankSet.add(tp.getTank());
+            if (tp instanceof KeyListener) {
+                this.addKeyListener((KeyListener)tp);
+            }
+        }
+        
+    }    
 
     public void startGameThread() throws IOException {
         createTankPvp();        
