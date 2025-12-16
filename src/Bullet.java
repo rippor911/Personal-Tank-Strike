@@ -130,4 +130,21 @@ public class Bullet {
             g2.drawImage(imgExplosion, bulletX, bulletY,gp.getTileSize(),gp.getTileSize(), null);
         }
     }
+
+    //getter:
+    public int getX() {
+        return bulletX;
+    }
+
+    public int getY() {
+        return bulletY;
+    }    
+
+    public int getDx() {
+        return vx;
+    }
+    
+    public int getDy() {
+        return vy;
+    }    
 }

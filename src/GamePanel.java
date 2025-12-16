@@ -294,4 +294,8 @@ public class GamePanel extends JPanel implements Runnable {
     public Screen getWindow() {
         return window;
     }
+
+    public ArrayList<Bullet> getBullets() {
+        return bm.getBullets();
+    }
 }

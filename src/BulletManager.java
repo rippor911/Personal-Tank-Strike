@@ -51,4 +51,9 @@ public class BulletManager {
         }
     }
 
+    //getter:
+    public ArrayList<Bullet> getBullets() {
+        return bullets;
+    }
+
 }
