@@ -119,7 +119,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         userSet.add(new User(p1.x,p1.y,this));         
 
-        userSet.add(new UserAI(p2.x,p2.y,this));
+        userSet.add(new User2(p2.x,p2.y,this)); 
 
         for (TankPanel tp : userSet) {
             tankSet.add(tp.getTank());
@@ -136,8 +136,8 @@ public class GamePanel extends JPanel implements Runnable {
         Point p2 = getSafePoint(4);
 
         userSet.add(new User(p1.x,p1.y,this));
-
-        userSet.add(new User2(p2.x,p2.y,this));      
+        userSet.add(new UserAI(p2.x,p2.y,this));
+             
 
         for (TankPanel tp : userSet) {
             tankSet.add(tp.getTank());
@@ -148,8 +148,12 @@ public class GamePanel extends JPanel implements Runnable {
         
     }    
 
-    public void startGameThread() throws IOException {
-        createTankPvp();        
+    public void startGameThread(String mode) throws IOException {
+        if (mode.equals("PVP")) {
+            createTankPvp();  
+        } else {
+            createTankPve();
+        }
         gameState = true;
         gameThread = new Thread(this);
         gameThread.start();

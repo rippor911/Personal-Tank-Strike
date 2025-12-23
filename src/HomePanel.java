@@ -21,7 +21,8 @@ public class HomePanel extends JPanel {
     private int height;
 
     private Image backgroundImage;
-    private JButton startButton;
+    private JButton startButtonPvp;
+    private JButton startButtonPve;
     private Screen window;
 
     public HomePanel(Screen window) {
@@ -47,55 +48,58 @@ public class HomePanel extends JPanel {
         createStartButton();
     }
 
-    private void createStartButton() {
-        startButton = new JButton("Game Start");
-        
-        // 设置按钮位置和大小
-        int buttonWidth = 150;
-        int buttonHeight = 50;
-        int x = (width - buttonWidth) / 2;
-        int y = (height - buttonHeight) / 2;
-        
-        startButton.setBounds(x, y, buttonWidth, buttonHeight);
-        
-        // 美化按钮
+    private void initButton(JButton startButton,String mode) {
         startButton.setFont(new Font("微软雅黑", Font.BOLD, 18));
         startButton.setForeground(Color.WHITE);
-        startButton.setBackground(new Color(70, 130, 180)); // 钢蓝色
+        startButton.setBackground(new Color(70, 130, 180));
         startButton.setFocusPainted(false);
         startButton.setBorder(BorderFactory.createRaisedBevelBorder());
         
-        // 添加鼠标悬停效果
         startButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                startButton.setBackground(new Color(100, 149, 237)); // 浅蓝色
+                startButton.setBackground(new Color(100, 149, 237));
             }
             
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                startButton.setBackground(new Color(70, 130, 180)); // 恢复原色
+                startButton.setBackground(new Color(70, 130, 180));
             }
         });
         
-        // 添加点击事件
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // 开始游戏逻辑
                 System.out.println("游戏开始！");
                 removeStartButton();
                 try {
-                    window.gameStart();
+                    window.gameStart(mode);
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
             }
         });
-        
+
         add(startButton);
+    }
+
+    private void createStartButton() {
+        startButtonPvp = new JButton("双人对战模式");
+        startButtonPve = new JButton("人机对战模式");
+        
+        int buttonWidth = 150;
+        int buttonHeight = 50;
+        int x = (width - buttonWidth) / 2;
+        int y = (height - buttonHeight) / 2;
+        
+        startButtonPvp.setBounds(x, y, buttonWidth, buttonHeight);
+        startButtonPve.setBounds(x, y + buttonHeight * 2, buttonWidth, buttonHeight);
+        
+        initButton(startButtonPve,"PVE");
+        initButton(startButtonPvp,"PVP");
     }
     
     public void removeStartButton() {
-        this.remove(startButton);
+        this.remove(startButtonPvp);
+        this.remove(startButtonPve);
     }
 
     @Override

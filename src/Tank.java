@@ -1,3 +1,4 @@
+
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -10,7 +11,7 @@ public class Tank {
     private int bulletSpeed = 6;
     private int hp = 5;
     private int score;
-    private int delta = 8;
+    private int delta = 4;
     private int bulletSpan = 300;
     private int state;
 

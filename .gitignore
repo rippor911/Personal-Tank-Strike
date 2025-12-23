@@ -4,4 +4,6 @@ document.md
 
 lib/
 
-.vscode/
+*.class
+
+bin/

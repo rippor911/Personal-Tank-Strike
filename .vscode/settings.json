@@ -1,0 +1,4 @@
+{
+  "java.project.sourcePaths": ["src"],  // 指定源代码根目录为src
+  "java.project.outputPath": "bin"      // 指定编译输出目录为bin（可选）
+}

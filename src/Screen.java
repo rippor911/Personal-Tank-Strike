@@ -8,9 +8,9 @@ public class Screen extends JFrame {
     private GamePanel gamePanel;
     private EndPanel endPanel;
 
-    private int tileSize = 48;
-    private int maxCol = 24;
-    private int maxRow = 18;
+    private int tileSize = 36;
+    private int maxCol = 28;
+    private int maxRow = 21;
     private int scale = 1;    
 
     public Screen() {
@@ -46,10 +46,10 @@ public class Screen extends JFrame {
         setVisible(true);       
     }
 
-    void gameStart() throws IOException {
+    void gameStart(String mode) throws IOException {
         gamePanel = new GamePanel(this);
         add(gamePanel);
-        gamePanel.startGameThread();
+        gamePanel.startGameThread(mode);
         if (homePanel != null) {
             remove(homePanel);
             homePanel = null;
