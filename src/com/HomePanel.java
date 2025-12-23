@@ -1,3 +1,4 @@
+package com;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Dimension;
@@ -11,6 +12,8 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+
+import com.util.ImageLoader;
 
 public class HomePanel extends JPanel {
     private int tileSize = 16;
@@ -35,7 +38,7 @@ public class HomePanel extends JPanel {
         width = tileSize * maxCol * scale;
         height = tileSize * maxRow * scale;
 
-        backgroundImage = new ImageIcon(getClass().getResource("/images/home.png")).getImage();
+        backgroundImage = new ImageIcon(ImageLoader.loadImage("/images/home.png")).getImage();
 
         setPreferredSize(new Dimension(width,height));
         setDoubleBuffered(true);

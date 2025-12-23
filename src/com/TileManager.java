@@ -1,5 +1,10 @@
+package com;
 import java.awt.Graphics2D;
 import java.io.IOException;
+
+import com.util.ImageLoader;
+import com.util.MazeGenerator;
+
 import java.awt.image.BufferedImage;
 
 public class TileManager {

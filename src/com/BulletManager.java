@@ -1,7 +1,11 @@
+package com;
+
 import java.awt.Graphics2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import com.item.Bullet;
 
 public class BulletManager {
 

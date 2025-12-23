@@ -2,7 +2,7 @@ document.md
 
 .VSCodeCounter/
 
-lib/
+*.jar
 
 *.class
 

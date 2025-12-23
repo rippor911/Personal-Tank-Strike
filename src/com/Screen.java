@@ -1,3 +1,4 @@
+package com;
 import java.io.IOException;
 
 import javax.swing.JFrame;
@@ -36,7 +37,7 @@ public class Screen extends JFrame {
 
     //JPanel manager:
 
-    void build() {
+    public void build() {
         homePanel = new HomePanel(this);
         add(homePanel);
         if (endPanel != null) {

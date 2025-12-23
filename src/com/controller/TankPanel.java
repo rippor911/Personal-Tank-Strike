@@ -1,4 +1,7 @@
+package com.controller;
 import java.awt.Graphics2D;
+
+import com.Tank;
 
 public interface TankPanel {
     public Tank getTank();

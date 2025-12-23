@@ -1,7 +1,10 @@
+package com;
 
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
+import com.item.Item;
+import com.util.ImageLoader;
+
 import java.awt.image.BufferedImage;
 
 public class Tank {
@@ -42,14 +45,14 @@ public class Tank {
 
         tankImage = new BufferedImage[8];
 
-        tankImage[0] = ImageIO.read(getClass().getResource("/images/tankLeft.png"));
-        tankImage[1] = ImageIO.read(getClass().getResource("/images/tankLeftDown.png"));
-        tankImage[2] = ImageIO.read(getClass().getResource("/images/tankDown.png"));
-        tankImage[3] = ImageIO.read(getClass().getResource("/images/tankRightDown.png"));
-        tankImage[4] = ImageIO.read(getClass().getResource("/images/tankRight.png"));
-        tankImage[5] = ImageIO.read(getClass().getResource("/images/tankRightUp.png"));
-        tankImage[6] = ImageIO.read(getClass().getResource("/images/tankUp.png"));
-        tankImage[7] = ImageIO.read(getClass().getResource("/images/tankLeftUp.png"));
+        tankImage[0] = ImageLoader.loadImage("/images/tankLeft.png");
+        tankImage[1] = ImageLoader.loadImage("/images/tankLeftDown.png");
+        tankImage[2] = ImageLoader.loadImage("/images/tankDown.png");
+        tankImage[3] = ImageLoader.loadImage("/images/tankRightDown.png");
+        tankImage[4] = ImageLoader.loadImage("/images/tankRight.png");
+        tankImage[5] = ImageLoader.loadImage("/images/tankRightUp.png");
+        tankImage[6] = ImageLoader.loadImage("/images/tankUp.png");
+        tankImage[7] = ImageLoader.loadImage("/images/tankLeftUp.png");
     }
 
     public BufferedImage getTankImage(int dx,int dy) {

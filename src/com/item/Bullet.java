@@ -1,9 +1,14 @@
+package com.item;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
+
+import com.GamePanel;
+import com.Tank;
+import com.util.ImageLoader;
 
 public class Bullet {
     
@@ -39,16 +44,8 @@ public class Bullet {
     }
 
     public void initImg() {
-        try {
-            imgBullet = ImageIO.read(getClass().getResource("/images/bullet.png"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            imgExplosion = ImageIO.read(getClass().getResource("/images/explosion.png"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }        
+        imgBullet = ImageLoader.loadImage("/images/bullet.png");
+        imgExplosion = ImageLoader.loadImage("/images/explosion.png");
     }
 
     public void move() {

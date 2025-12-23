@@ -1,3 +1,6 @@
+package com;
+
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -9,6 +12,12 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import javax.swing.JPanel;
+
+import com.item.Bullet;
+import com.controller.TankPanel;
+import com.controller.User1;
+import com.controller.User2;
+import com.controller.UserAI;
 
 public class GamePanel extends JPanel implements Runnable {
     private int tileSize;
@@ -117,7 +126,7 @@ public class GamePanel extends JPanel implements Runnable {
         Point p1 = getSafePoint(1);
         Point p2 = getSafePoint(4);
 
-        userSet.add(new User(p1.x,p1.y,this));         
+        userSet.add(new User1(p1.x,p1.y,this));         
 
         userSet.add(new User2(p2.x,p2.y,this)); 
 
@@ -135,7 +144,7 @@ public class GamePanel extends JPanel implements Runnable {
         Point p1 = getSafePoint(1);
         Point p2 = getSafePoint(4);
 
-        userSet.add(new User(p1.x,p1.y,this));
+        userSet.add(new User1(p1.x,p1.y,this));
         userSet.add(new UserAI(p2.x,p2.y,this));
              
 
@@ -160,8 +169,6 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void endGame() {
-        // TODO complete endGame
-        
         System.out.println("Game Over.");
         
         gameState = false;
@@ -179,7 +186,6 @@ public class GamePanel extends JPanel implements Runnable {
         try {
             window.endGame(winner);
         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }

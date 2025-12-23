@@ -1,3 +1,4 @@
+package com.controller;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -6,6 +7,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import com.GamePanel;
+import com.Tank;
+import com.item.Bullet;
 
 public class UserAI implements TankPanel {
 

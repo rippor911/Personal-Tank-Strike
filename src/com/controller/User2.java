@@ -1,3 +1,4 @@
+package com.controller;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -6,7 +7,10 @@ import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-public class User implements KeyListener,TankPanel {
+import com.GamePanel;
+import com.Tank;
+
+public class User2 implements KeyListener,TankPanel {
     
     private boolean upPressed;
     private boolean leftPressed;
@@ -19,7 +23,7 @@ public class User implements KeyListener,TankPanel {
     private Tank myTank;
     private GamePanel gp;
 
-    public User(int x,int y,GamePanel gp) throws IOException {
+    public User2(int x,int y,GamePanel gp) throws IOException {
         myTank = new Tank(x, y,gp);
         dx = 0;
         dy = 0;
@@ -74,23 +78,23 @@ public class User implements KeyListener,TankPanel {
     @Override
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
-        if (code == KeyEvent.VK_W) {
+        if (code == KeyEvent.VK_UP) {
             upPressed = true;
         }
 
-        if (code == KeyEvent.VK_A) {
+        if (code == KeyEvent.VK_LEFT) {
             leftPressed = true;
         }
 
-        if (code == KeyEvent.VK_S) {
+        if (code == KeyEvent.VK_DOWN) {
             downPressed = true;
         }        
 
-        if (code == KeyEvent.VK_D) {
+        if (code == KeyEvent.VK_RIGHT) {
             rightPressed = true;
         }
         
-        if (code == KeyEvent.VK_SPACE) {
+        if (code == KeyEvent.VK_ENTER) {
             shootPressed = true;
         }
     }
@@ -98,23 +102,23 @@ public class User implements KeyListener,TankPanel {
     @Override
     public void keyReleased(KeyEvent e) {
         int code = e.getKeyCode();
-        if (code == KeyEvent.VK_W) {
+        if (code == KeyEvent.VK_UP) {
             upPressed = false;
         }
 
-        if (code == KeyEvent.VK_A) {
+        if (code == KeyEvent.VK_LEFT) {
             leftPressed = false;
         }
 
-        if (code == KeyEvent.VK_S) {
+        if (code == KeyEvent.VK_DOWN) {
             downPressed = false;
         }        
 
-        if (code == KeyEvent.VK_D) {
+        if (code == KeyEvent.VK_RIGHT) {
             rightPressed = false;
         }
         
-        if (code == KeyEvent.VK_SPACE) {
+        if (code == KeyEvent.VK_ENTER) {
             shootPressed = false;
         }
     }
