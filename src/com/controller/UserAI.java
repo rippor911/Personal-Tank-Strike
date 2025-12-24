@@ -22,27 +22,29 @@ public class UserAI implements TankPanel {
     private int dx = 0;
     private int dy = 0;
     
-    //pathfinding
+    // Pathfinding
     private List<Node> path = new ArrayList<>();
-    private long lastCalcTime;
+    private long lastTime;
     private static final int RECALC_DELAY = 500; 
 
-    //anti-stuck
+    // Anti-stuck
     private int lastX, lastY;
     private int stuckCnt = 0;
     private boolean recovering = false;
     private int recStep = 0;
     
-    //dodge settings
+    // Dodge settings
     private Random rand = new Random();
     private int safeDist = 180; 
     private int dodgeCool = 0;
-    private static final int ITEM_ATTRACTION_BIAS = 100; 
+    
+    // AI Bias
+    private static final int ITEM_BIAS = 100; 
 
     public UserAI(int x, int y, GamePanel gp) throws IOException {
         this.gp = gp;
         this.me = new Tank(x, y, gp);
-        this.lastCalcTime = System.currentTimeMillis();
+        this.lastTime = System.currentTimeMillis();
         this.lastX = x;
         this.lastY = y;
     }
@@ -50,59 +52,62 @@ public class UserAI implements TankPanel {
     @Override
     public void update() {
         target = findTarget();
+        
         if (target == null) {
             stop();
             return;
         }
 
-        // 1. Dodge bullets
+        // 1. escape bullets
         if (checkDodge()) {
-            updatePosRecord();
+            recPos();
             return;
         }
 
-        // 2. Unstuck
+        // 2. prevent stuck
         if (checkStuck()) {
-            doUnstuck();
+            solStuck();
             return;
         }
 
-        // 3. Attack
+        // 3. attack
         tryAttack();
 
-        // 4. Decision Making
-        int[] dest = decideDest();
+        // 4. decide destination
+        int[] dest = calcDest();
 
-        // 5. Move along path
+        // 5. move along path
         followPath(dest[0], dest[1]);
         
-        updatePosRecord();
+        recPos();
     }
 
-    private int[] decideDest() {
-        int bestX = target.getX();
-        int bestY = target.getY();
+    private int[] calcDest() {
+        int tx = target.getX();
+        int ty = target.getY();
         
-        double minCost = getDistance(me.getX(), me.getY(), bestX, bestY);
+        double minCost = getDist(me.getX(), me.getY(), tx, ty);
 
-        ArrayList<Item> items = gp.getItems(); 
+        List<Item> items = gp.getItems(); 
         
         if (items != null && !items.isEmpty()) {
-            for (Item item : items) {
-                if (!item.isLive()) continue; 
+            for (Item it : items) {
+                if (!it.isLive()) {
+                    continue; 
+                }
 
-                double distToItem = getDistance(me.getX(), me.getY(), item.getX(), item.getY());
-                double itemCost = distToItem - ITEM_ATTRACTION_BIAS;
+                double d = getDist(me.getX(), me.getY(), it.getX(), it.getY());
+                double cost = d - ITEM_BIAS;
 
-                if (itemCost < minCost) {
-                    minCost = itemCost;
-                    bestX = item.getX();
-                    bestY = item.getY();
+                if (cost < minCost) {
+                    minCost = cost;
+                    tx = it.getX();
+                    ty = it.getY();
                 }
             }
         }
         
-        return new int[]{bestX, bestY};
+        return new int[]{tx, ty};
     }
 
     private void stop() {
@@ -110,57 +115,98 @@ public class UserAI implements TankPanel {
         dy = 0;
     }
 
-    private void updatePosRecord() { 
+    private void recPos() { 
         lastX = me.getX(); 
         lastY = me.getY(); 
     }
 
-    //Dodge Logic
+    // --- Dodge Logic ---
+
     private boolean checkDodge() {
         if (dodgeCool > 0) {
             dodgeCool--;
-            if (me.move(dx, dy)) me.update(dx, dy);
+            if (me.move(dx, dy)) {
+                me.update(dx, dy);
+            }
             return true;
         }
-        ArrayList<Bullet> bullets = gp.getBullets();
-        if (bullets == null || bullets.isEmpty()) return false;
 
-        int mx = me.getX(), my = me.getY(), ts = gp.getTileSize();
+        ArrayList<Bullet> bullets = gp.getBullets();
+        if (bullets == null || bullets.isEmpty()) {
+            return false;
+        }
+
+        int mx = me.getX();
+        int my = me.getY();
+        int ts = gp.getTileSize();
+
         for (Bullet b : bullets) {
             double dist = Math.sqrt(Math.pow(mx - b.getX(), 2) + Math.pow(my - b.getY(), 2));
-            if (dist > safeDist) continue;
-            boolean danger = false;
-            int bdx = b.getDx(), bdy = b.getDy();
-            if (bdx != 0 && Math.abs(b.getY() - my) < ts) {
-                if ((bdx > 0 && b.getX() < mx) || (bdx < 0 && b.getX() > mx)) danger = true;
-            } else if (bdy != 0 && Math.abs(b.getX() - mx) < ts) {
-                if ((bdy > 0 && b.getY() < my) || (bdy < 0 && b.getY() > my)) danger = true;
+            
+            if (dist > safeDist) {
+                continue;
             }
-            if (danger) return executeDodge(bdx, bdy);
+
+            boolean danger = false;
+            int bdx = b.getDx();
+            int bdy = b.getDy();
+
+            boolean xThreat = (bdx != 0 && Math.abs(b.getY() - my) < ts);
+            boolean yThreat = (bdy != 0 && Math.abs(b.getX() - mx) < ts);
+
+            if (xThreat) {
+                if ((bdx > 0 && b.getX() < mx) || (bdx < 0 && b.getX() > mx)) {
+                    danger = true;
+                }
+            } else if (yThreat) {
+                if ((bdy > 0 && b.getY() < my) || (bdy < 0 && b.getY() > my)) {
+                    danger = true;
+                }
+            }
+
+            if (danger) {
+                return excDodge(bdx, bdy);
+            }
         }
         return false;
     }
 
-    private boolean executeDodge(int bdx, int bdy) {
+    private boolean excDodge(int bdx, int bdy) {
         int spd = me.getSpeed();
         int col = me.getX() / gp.getTileSize();
         int row = me.getY() / gp.getTileSize();
-        dx = 0; dy = 0;
+        
+        dx = 0; 
+        dy = 0;
+
         if (bdx != 0) { 
             boolean canUp = !isWall(col, row - 1);
             boolean canDown = !isWall(col, row + 1);
-            if (canUp && canDown) dy = rand.nextBoolean() ? -spd : spd;
-            else if (canUp) dy = -spd;
-            else if (canDown) dy = spd;
-            else return false;
+            
+            if (canUp && canDown) {
+                dy = rand.nextBoolean() ? -spd : spd;
+            } else if (canUp) {
+                dy = -spd;
+            } else if (canDown) {
+                dy = spd;
+            } else {
+                return false;
+            }
         } else {
             boolean canLeft = !isWall(col - 1, row);
             boolean canRight = !isWall(col + 1, row);
-            if (canLeft && canRight) dx = rand.nextBoolean() ? -spd : spd;
-            else if (canLeft) dx = -spd;
-            else if (canRight) dx = spd;
-            else return false;
+
+            if (canLeft && canRight) {
+                dx = rand.nextBoolean() ? -spd : spd;
+            } else if (canLeft) {
+                dx = -spd;
+            } else if (canRight) {
+                dx = spd;
+            } else {
+                return false;
+            }
         }
+
         if (me.move(dx, dy)) { 
             me.update(dx, dy);
             dodgeCool = 10;
@@ -169,98 +215,134 @@ public class UserAI implements TankPanel {
         return false;
     }
 
-    //Anti-Stuck Logic
+    // --- Anti-Stuck Logic ---
+
     private boolean checkStuck() {
-        if ((dx != 0 || dy != 0) && me.getX() == lastX && me.getY() == lastY) stuckCnt++;
-        else stuckCnt = 0;
+        if ((dx != 0 || dy != 0) && me.getX() == lastX && me.getY() == lastY) {
+            stuckCnt++;
+        } else {
+            stuckCnt = 0;
+        }
+        
         if (stuckCnt > 15) {
-            recovering = true; recStep = 20; stuckCnt = 0; path.clear(); return true;
+            recovering = true;
+            recStep = 20;
+            stuckCnt = 0;
+            path.clear();
+            return true;
         }
         return recovering;
     }
 
-    private void doUnstuck() {
+    private void solStuck() {
         if (recStep > 0) {
             recStep--;
             if (recStep % 5 == 0) { 
                 int dir = rand.nextInt(4);
-                int s = me.getSpeed();
-                dx = (dir==0?s : dir==1?-s : 0);
-                dy = (dir==2?s : dir==3?-s : 0);
+                int spd = me.getSpeed();
+                
+                dx = 0;
+                dy = 0;
+                
+                if (dir == 0) { dx = spd; }
+                else if (dir == 1) { dx = -spd; }
+                else if (dir == 2) { dy = spd; }
+                else if (dir == 3) { dy = -spd; }
             }
-            if (me.move(dx, dy)) me.update(dx, dy);
-        } else { recovering = false; }
+            
+            if (me.move(dx, dy)) {
+                me.update(dx, dy);
+            }
+        } else {
+            recovering = false;
+        }
     }
 
-    // Movement & Pathfinding
-    private void followPath(int destX, int destY) {
+    // --- Movement & Pathfinding ---
+
+    private void followPath(int tx, int ty) {
         long now = System.currentTimeMillis();
         int ts = gp.getTileSize();
         
-        // calc grid pos
-        int startCol = (me.getX() + ts/2) / ts;
-        int startRow = (me.getY() + ts/2) / ts;
-        int targetCol = (destX + ts/2) / ts;
-        int targetRow = (destY + ts/2) / ts;
+        int startCol = (me.getX() + ts / 2) / ts;
+        int startRow = (me.getY() + ts / 2) / ts;
+        int tCol = (tx + ts / 2) / ts;
+        int tRow = (ty + ts / 2) / ts;
 
-        boolean needRecalc = (now - lastCalcTime > RECALC_DELAY) || path.isEmpty();
+        boolean needRecalc = (now - lastTime > RECALC_DELAY) || path.isEmpty();
         
-        // Path Check
         if (!path.isEmpty()) {
-            Node endNode = path.get(path.size()-1);
-            if (endNode.col != targetCol || endNode.row != targetRow) {
+            Node end = path.get(path.size() - 1);
+            if (end.col != tCol || end.row != tRow) {
                 needRecalc = true;
             }
         }
 
         if (needRecalc) {
-            path = findPath(startCol, startRow, targetCol, targetRow);
-            lastCalcTime = now;
+            path = findPath(startCol, startRow, tCol, tRow);
+            lastTime = now;
         }
 
         if (!path.isEmpty()) {
             Node next = path.get(0);
-            if (getDistance(me.getX(), me.getY(), next.col * ts, next.row * ts) < me.getSpeed()) {
+            
+            double d = getDist(me.getX(), me.getY(), next.col * ts, next.row * ts);
+            if (d < me.getSpeed()) {
                 path.remove(0);
-                if (path.isEmpty()) return;
+                if (path.isEmpty()) {
+                    return;
+                }
                 next = path.get(0);
             }
+            
             moveTo(next.col, next.row);
         }
     }
 
     private void moveTo(int tCol, int tRow) {
         int ts = gp.getTileSize();
-        int s = me.getSpeed();
+        int spd = me.getSpeed();
         int tx = tCol * ts;
         int ty = tRow * ts;
-        int cx = me.getX();
-        int cy = me.getY();
+        int mx = me.getX();
+        int my = me.getY();
 
-        dx = 0; dy = 0;
+        dx = 0; 
+        dy = 0;
 
-        if (tx != cx) {
-            if (Math.abs(cy - ty) > s) {
-                dy = (cy < ty) ? s : -s; 
+        // grid alignment
+        if (tx != mx) {
+            if (Math.abs(my - ty) > spd) {
+                dy = (my < ty) ? spd : -spd; 
             } else {
-                if (cy != ty) dy = (cy < ty) ? 1 : -1;
-                dx = (cx < tx) ? s : -s;
+                if (my != ty) {
+                    dy = (my < ty) ? 1 : -1;
+                }
+                dx = (mx < tx) ? spd : -spd;
             }
-        } else if (ty != cy) {
-            if (Math.abs(cx - tx) > s) {
-                dx = (cx < tx) ? s : -s; 
+        } else if (ty != my) {
+            if (Math.abs(mx - tx) > spd) {
+                dx = (mx < tx) ? spd : -spd; 
             } else {
-                if (cx != tx) dx = (cx < tx) ? 1 : -1;
-                dy = (cy < ty) ? s : -s;
+                if (mx != tx) {
+                    dx = (mx < tx) ? 1 : -1;
+                }
+                dy = (my < ty) ? spd : -spd;
             }
         }
-        if (me.move(dx, dy)) me.update(dx, dy);
+        
+        if (me.move(dx, dy)) {
+            me.update(dx, dy);
+        }
     }
 
-    // A*
+    // --- A* Algorithm ---
+    
     public class Node {
-        int col, row, gCost, hCost, fCost;
+        int col, row;
+        int g, h, f;
         Node parent;
+
         public Node(int col, int row) { 
             this.col = col; 
             this.row = row; 
@@ -271,79 +353,104 @@ public class UserAI implements TankPanel {
         if (!isValid(endCol, endRow) || isWall(endCol, endRow)) {
             return new ArrayList<>();
         }
-        List<Node> openList = new ArrayList<>();
-        List<Node> closedList = new ArrayList<>();
-        Node startNode = new Node(startCol, startRow);
-        openList.add(startNode);
+        
+        List<Node> open = new ArrayList<>();
+        List<Node> closed = new ArrayList<>();
+        
+        Node start = new Node(startCol, startRow);
+        open.add(start);
 
-        while (!openList.isEmpty()) {
-            Node current = openList.get(0);
-            for (Node n : openList) {
-                if (n.fCost < current.fCost) {
-                    current = n;
+        while (!open.isEmpty()) {
+            Node cur = open.get(0);
+            for (Node n : open) {
+                if (n.f < cur.f) {
+                    cur = n;
                 }
             }
-            openList.remove(current);
-            closedList.add(current);
+            
+            open.remove(cur);
+            closed.add(cur);
 
-            if (current.col == endCol && current.row == endRow) {
-                return buildPath(current);
+            if (cur.col == endCol && cur.row == endRow) {
+                return buildPath(cur);
             }
 
             int[][] dirs = {{0,1}, {0,-1}, {1,0}, {-1,0}};
+            
             for (int[] d : dirs) {
-                int nCol = current.col + d[0];
-                int nRow = current.row + d[1];
-                if (!isValid(nCol, nRow) || isWall(nCol, nRow)) continue;
-                if (isInList(closedList, nCol, nRow)) continue;
+                int nc = cur.col + d[0];
+                int nr = cur.row + d[1];
 
-                int newGCost = current.gCost + 1;
-                Node neighbor = getFromList(openList, nCol, nRow);
-                if (neighbor == null) {
-                    neighbor = new Node(nCol, nRow);
-                    neighbor.gCost = newGCost;
-                    neighbor.hCost = Math.abs(nCol - endCol) + Math.abs(nRow - endRow);
-                    neighbor.fCost = neighbor.gCost + neighbor.hCost;
-                    neighbor.parent = current;
-                    openList.add(neighbor);
-                } else if (newGCost < neighbor.gCost) {
-                    neighbor.gCost = newGCost;
-                    neighbor.fCost = neighbor.gCost + neighbor.hCost;
-                    neighbor.parent = current;
+                if (!isValid(nc, nr) || isWall(nc, nr)) {
+                    continue;
+                }
+                if (isInList(closed, nc, nr)) {
+                    continue;
+                }
+
+                int newG = cur.g + 1;
+                Node nb = getFromList(open, nc, nr);
+                
+                if (nb == null) {
+                    nb = new Node(nc, nr);
+                    nb.g = newG;
+                    nb.h = Math.abs(nc - endCol) + Math.abs(nr - endRow);
+                    nb.f = nb.g + nb.h;
+                    nb.parent = cur;
+                    open.add(nb);
+                } else if (newG < nb.g) {
+                    nb.g = newG;
+                    nb.f = nb.g + nb.h;
+                    nb.parent = cur;
                 }
             }
         }
         return new ArrayList<>();
     }
 
-    private List<Node> buildPath(Node endNode) {
-        List<Node> p = new ArrayList<>();
-        Node cur = endNode;
-        while (cur.parent != null) { p.add(0, cur); cur = cur.parent; }
-        return p;
+    private List<Node> buildPath(Node end) {
+        List<Node> ret = new ArrayList<>();
+        Node cur = end;
+        while (cur.parent != null) { 
+            ret.add(0, cur); 
+            cur = cur.parent; 
+        }
+        return ret;
     }
-    private boolean isInList(List<Node> list, int col, int row) { return getFromList(list, col, row) != null; }
-    private Node getFromList(List<Node> list, int col, int row) {
-        for (Node n : list) if (n.col == col && n.row == row) return n;
+    
+    private boolean isInList(List<Node> list, int c, int r) { 
+        return getFromList(list, c, r) != null; 
+    }
+    
+    private Node getFromList(List<Node> list, int c, int r) {
+        for (Node n : list) {
+            if (n.col == c && n.row == r) {
+                return n;
+            }
+        }
         return null;
     }
 
-    // Attack & Utils
+    // --- Attack & Utils ---
+
     private boolean tryAttack() {
         int ts = gp.getTileSize();
-        int mx = me.getX() + ts/2;
-        int my = me.getY() + ts/2;
-        int tx = target.getX() + ts/2;
-        int ty = target.getY() + ts/2;
+        int mx = me.getX() + ts / 2;
+        int my = me.getY() + ts / 2;
+        int tx = target.getX() + ts / 2;
+        int ty = target.getY() + ts / 2;
         int margin = ts / 2;
 
         boolean alignX = Math.abs(mx - tx) < margin;
         boolean alignY = Math.abs(my - ty) < margin;
 
-        if ((alignX || alignY) && hasLineOfSight(mx, my, tx, ty)) {
+        if ((alignX || alignY) && hasLos(mx, my, tx, ty)) {
 
-            if (alignX) me.getTankImage(0, (ty > my) ? 1 : -1);
-            else me.getTankImage((tx > mx) ? 1 : -1, 0);
+            if (alignX) {
+                me.getTankImage(0, (ty > my) ? 1 : -1);
+            } else {
+                me.getTankImage((tx > mx) ? 1 : -1, 0);
+            }
             
             me.shoot();
             return true;
@@ -351,15 +458,22 @@ public class UserAI implements TankPanel {
         return false;
     }
 
-    private boolean hasLineOfSight(int x1, int y1, int x2, int y2) {
+    private boolean hasLos(int x1, int y1, int x2, int y2) {
         int ts = gp.getTileSize();
-        int steps = Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)) / (ts/2);
-        if (steps == 0) return true;
-        float xInc = (float)(x2 - x1) / steps;
-        float yInc = (float)(y2 - y1) / steps;
-        float cx = x1, cy = y1;
+        int steps = Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)) / (ts / 2);
+        
+        if (steps == 0) {
+            return true;
+        }
+        
+        float xi = (float)(x2 - x1) / steps;
+        float yi = (float)(y2 - y1) / steps;
+        float cx = x1;
+        float cy = y1;
+        
         for (int i = 0; i < steps; i++) {
-            cx += xInc; cy += yInc;
+            cx += xi; 
+            cy += yi;
             if (isWall((int)cx / ts, (int)cy / ts)) {
                 return false;
             }
@@ -381,9 +495,11 @@ public class UserAI implements TankPanel {
     public Tank getTank() { 
         return me; 
     }
+    
     public Tank getTargetTank() { 
         return target; 
     }
+    
     public GamePanel getGp() { 
         return gp; 
     }
@@ -400,20 +516,21 @@ public class UserAI implements TankPanel {
         return null;
     }    
 
-    private boolean isValid(int col, int row) {
-        return (col >= 0 && col < gp.getMaxCol() / gp.getWindow().scale() && 
-                row >= 0 && row < gp.getMaxRow() / gp.getWindow().scale());
+    private boolean isValid(int c, int r) {
+        int mc = gp.getMaxCol() / gp.getWindow().scale();
+        int mr = gp.getMaxRow() / gp.getWindow().scale();
+        return (c >= 0 && c < mc && r >= 0 && r < mr);
     }
     
-    private boolean isWall(int col, int row) {
+    private boolean isWall(int c, int r) {
         try { 
-            return gp.getMap()[row][col] == 1; 
+            return gp.getMap()[r][c] == 1; 
         } catch (Exception e) { 
             return true; 
         }
     }
     
-    private double getDistance(int x1, int y1, int x2, int y2) {
+    private double getDist(int x1, int y1, int x2, int y2) {
         return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
     }
 }

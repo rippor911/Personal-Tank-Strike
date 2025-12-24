@@ -29,6 +29,7 @@ public class GamePanel extends JPanel implements Runnable {
     private int fps = 60;
     private int [][] map;
     private boolean gameState;
+    private long startTime;
 
     private Thread gameThread;
     private Screen window;
@@ -47,6 +48,7 @@ public class GamePanel extends JPanel implements Runnable {
         maxCol = screen.getMaxCol();
         maxRow = screen.getMaxRow();
         scale = screen.scale();
+        startTime = System.currentTimeMillis();
 
         width = tileSize * maxCol * scale;
         height = tileSize * maxRow * scale;        
@@ -172,7 +174,15 @@ public class GamePanel extends JPanel implements Runnable {
         gameThread.start();
     }
 
+    public void stopGame() {
+        gameState = false;
+    }    
+
     public void endGame() {
+        if (!gameState) {
+                return;
+        }
+
         System.out.println("Game Over.");
         
         gameState = false;
@@ -188,7 +198,7 @@ public class GamePanel extends JPanel implements Runnable {
         }        
 
         try {
-            window.endGame(winner);
+            window.endGame(winner, System.currentTimeMillis() - startTime);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -227,6 +237,10 @@ public class GamePanel extends JPanel implements Runnable {
 
     public void update() {
 
+        if (!gameState) {
+            return;
+        }        
+
         tm.update();
         bm.update();
         im.update(System.currentTimeMillis());
@@ -240,7 +254,7 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
 
-        if (cnt <= 1) {
+        if (cnt <= 1 && gameState) {
             this.endGame();
         }
     }

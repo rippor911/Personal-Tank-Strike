@@ -48,6 +48,12 @@ public class Screen extends JFrame {
     }
 
     void gameStart(String mode) throws IOException {
+
+        if (gamePanel != null) {
+            gamePanel.stopGame(); 
+            remove(gamePanel);
+        }
+
         gamePanel = new GamePanel(this);
         add(gamePanel);
         gamePanel.startGameThread(mode);
@@ -58,13 +64,13 @@ public class Screen extends JFrame {
         setVisible(true);
     }
 
-    void endGame(String winner) throws InterruptedException {
+    void endGame(String winner, long duration) throws InterruptedException {
         if (gamePanel != null) {
             remove(gamePanel);
             gamePanel = null;
         }
 
-        EndPanel ep = new EndPanel(this, winner);
+        EndPanel ep = new EndPanel(this, winner, duration);
         this.add(ep);
         this.setVisible(true);
 

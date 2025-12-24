@@ -229,7 +229,7 @@ public class Tank {
     }
 
 	public void addSpeed(int deltaSpeed) {
-        if (speed != initSpeed) {
+        if (speed == initSpeed) {
             speed += deltaSpeed;
         }
 	}
