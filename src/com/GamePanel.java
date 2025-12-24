@@ -1,6 +1,4 @@
 package com;
-
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -37,6 +35,7 @@ public class GamePanel extends JPanel implements Runnable {
     private TileManager tm = null;
     private BulletManager bm = null;
     private ItemManager im = null;
+    private ShowHeart sh = null;
 
     private ArrayList<Tank> tankSet;
     private ArrayList<TankPanel> userSet;
@@ -58,6 +57,7 @@ public class GamePanel extends JPanel implements Runnable {
         map = tm.getMap();
         bm = new BulletManager(this);
         im = new ItemManager(this);
+        sh = new ShowHeart(this);
 
         tankSet = new ArrayList<>();
         userSet = new ArrayList<>();
@@ -252,6 +252,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         tm.draw(g2);
         im.draw(g2);
+        sh.draw(g2);
 
         for (TankPanel user : userSet) {
             user.draw(g2);
