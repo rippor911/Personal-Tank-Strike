@@ -9,7 +9,8 @@ import java.awt.image.BufferedImage;
 public class Tank {
     private int tankX;
     private int tankY;
-    private int speed = 4;
+    private final static int initSpeed = 4;
+    private int speed = initSpeed;
     private int bulletSpeed = 6;
     private int hp = 5;
     private int score;
@@ -228,7 +229,9 @@ public class Tank {
     }
 
 	public void addSpeed(int deltaSpeed) {
-		speed += deltaSpeed;
+        if (speed != initSpeed) {
+            speed += deltaSpeed;
+        }
 	}
 
 }

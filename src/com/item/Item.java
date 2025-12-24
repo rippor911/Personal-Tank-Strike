@@ -108,4 +108,8 @@ public class Item {
         return state;
     }    
 
+    public boolean isLive() {
+        return state.equals("uncollected");
+    }
+
 }

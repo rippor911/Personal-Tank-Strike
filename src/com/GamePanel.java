@@ -12,6 +12,7 @@ import java.util.Random;
 import javax.swing.JPanel;
 
 import com.item.Bullet;
+import com.item.Item;
 import com.item.ItemManager;
 import com.controller.TankPanel;
 import com.controller.User1;
@@ -311,5 +312,9 @@ public class GamePanel extends JPanel implements Runnable {
 
     public ArrayList<Bullet> getBullets() {
         return bm.getBullets();
+    }
+
+    public ArrayList<Item> getItems() {
+        return im.getItems();
     }
 }

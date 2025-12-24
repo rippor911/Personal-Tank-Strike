@@ -11,6 +11,7 @@ import java.util.Random;
 import com.GamePanel;
 import com.Tank;
 import com.item.Bullet;
+import com.item.Item; 
 
 public class UserAI implements TankPanel {
 
@@ -36,6 +37,7 @@ public class UserAI implements TankPanel {
     private Random rand = new Random();
     private int safeDist = 180; 
     private int dodgeCool = 0;
+    private static final int ITEM_ATTRACTION_BIAS = 100; 
 
     public UserAI(int x, int y, GamePanel gp) throws IOException {
         this.gp = gp;
@@ -66,52 +68,74 @@ public class UserAI implements TankPanel {
         }
 
         // 3. Attack
-        if (tryAttack()) {
-            stop();
-            return;
-        }
+        tryAttack();
 
-        // 4. Move along path
-        followPath();
+        // 4. Decision Making
+        int[] dest = decideDest();
+
+        // 5. Move along path
+        followPath(dest[0], dest[1]);
+        
         updatePosRecord();
     }
 
-    private void stop() { dx = 0; dy = 0; }
-    private void updatePosRecord() { lastX = me.getX(); lastY = me.getY(); }
+    private int[] decideDest() {
+        int bestX = target.getX();
+        int bestY = target.getY();
+        
+        double minCost = getDistance(me.getX(), me.getY(), bestX, bestY);
+
+        ArrayList<Item> items = gp.getItems(); 
+        
+        if (items != null && !items.isEmpty()) {
+            for (Item item : items) {
+                if (!item.isLive()) continue; 
+
+                double distToItem = getDistance(me.getX(), me.getY(), item.getX(), item.getY());
+                double itemCost = distToItem - ITEM_ATTRACTION_BIAS;
+
+                if (itemCost < minCost) {
+                    minCost = itemCost;
+                    bestX = item.getX();
+                    bestY = item.getY();
+                }
+            }
+        }
+        
+        return new int[]{bestX, bestY};
+    }
+
+    private void stop() {
+        dx = 0;
+        dy = 0;
+    }
+
+    private void updatePosRecord() { 
+        lastX = me.getX(); 
+        lastY = me.getY(); 
+    }
 
     //Dodge Logic
-
     private boolean checkDodge() {
         if (dodgeCool > 0) {
             dodgeCool--;
             if (me.move(dx, dy)) me.update(dx, dy);
             return true;
         }
-
         ArrayList<Bullet> bullets = gp.getBullets();
         if (bullets == null || bullets.isEmpty()) return false;
 
-        int mx = me.getX();
-        int my = me.getY();
-        int ts = gp.getTileSize();
-
+        int mx = me.getX(), my = me.getY(), ts = gp.getTileSize();
         for (Bullet b : bullets) {
-            // distance check
             double dist = Math.sqrt(Math.pow(mx - b.getX(), 2) + Math.pow(my - b.getY(), 2));
             if (dist > safeDist) continue;
-
-            // threat check
             boolean danger = false;
-            int bdx = b.getDx();
-            int bdy = b.getDy();
-
+            int bdx = b.getDx(), bdy = b.getDy();
             if (bdx != 0 && Math.abs(b.getY() - my) < ts) {
                 if ((bdx > 0 && b.getX() < mx) || (bdx < 0 && b.getX() > mx)) danger = true;
-            }
-            else if (bdy != 0 && Math.abs(b.getX() - mx) < ts) {
+            } else if (bdy != 0 && Math.abs(b.getX() - mx) < ts) {
                 if ((bdy > 0 && b.getY() < my) || (bdy < 0 && b.getY() > my)) danger = true;
             }
-
             if (danger) return executeDodge(bdx, bdy);
         }
         return false;
@@ -121,31 +145,23 @@ public class UserAI implements TankPanel {
         int spd = me.getSpeed();
         int col = me.getX() / gp.getTileSize();
         int row = me.getY() / gp.getTileSize();
-        
         dx = 0; dy = 0;
-
         if (bdx != 0) { 
-            // bullet horizontal
             boolean canUp = !isWall(col, row - 1);
             boolean canDown = !isWall(col, row + 1);
-            
             if (canUp && canDown) dy = rand.nextBoolean() ? -spd : spd;
             else if (canUp) dy = -spd;
             else if (canDown) dy = spd;
             else return false;
         } else {
-            //bullet vertical
             boolean canLeft = !isWall(col - 1, row);
             boolean canRight = !isWall(col + 1, row);
-
             if (canLeft && canRight) dx = rand.nextBoolean() ? -spd : spd;
             else if (canLeft) dx = -spd;
             else if (canRight) dx = spd;
             else return false;
         }
-
         if (me.move(dx, dy)) { 
-            //lock direction for short time
             me.update(dx, dy);
             dodgeCool = 10;
             return true;
@@ -154,21 +170,11 @@ public class UserAI implements TankPanel {
     }
 
     //Anti-Stuck Logic
-
     private boolean checkStuck() {
-        // trying to move but pos not changing
-        if ((dx != 0 || dy != 0) && me.getX() == lastX && me.getY() == lastY) {
-            stuckCnt++;
-        } else {
-            stuckCnt = 0;
-        }
-        
+        if ((dx != 0 || dy != 0) && me.getX() == lastX && me.getY() == lastY) stuckCnt++;
+        else stuckCnt = 0;
         if (stuckCnt > 15) {
-            recovering = true;
-            recStep = 20;
-            stuckCnt = 0;
-            path.clear();
-            return true;
+            recovering = true; recStep = 20; stuckCnt = 0; path.clear(); return true;
         }
         return recovering;
     }
@@ -176,7 +182,6 @@ public class UserAI implements TankPanel {
     private void doUnstuck() {
         if (recStep > 0) {
             recStep--;
-            // random move every 5 frames
             if (recStep % 5 == 0) { 
                 int dir = rand.nextInt(4);
                 int s = me.getSpeed();
@@ -184,32 +189,37 @@ public class UserAI implements TankPanel {
                 dy = (dir==2?s : dir==3?-s : 0);
             }
             if (me.move(dx, dy)) me.update(dx, dy);
-        } else {
-            recovering = false;
-        }
+        } else { recovering = false; }
     }
 
-    //Movement & Pathfinding
-
-    private void followPath() {
+    // Movement & Pathfinding
+    private void followPath(int destX, int destY) {
         long now = System.currentTimeMillis();
         int ts = gp.getTileSize();
         
         // calc grid pos
         int startCol = (me.getX() + ts/2) / ts;
         int startRow = (me.getY() + ts/2) / ts;
-        int targetCol = (target.getX() + ts/2) / ts;
-        int targetRow = (target.getY() + ts/2) / ts;
+        int targetCol = (destX + ts/2) / ts;
+        int targetRow = (destY + ts/2) / ts;
 
-        // recalc path periodically
-        if (now - lastCalcTime > RECALC_DELAY || path.isEmpty()) {
+        boolean needRecalc = (now - lastCalcTime > RECALC_DELAY) || path.isEmpty();
+        
+        // Path Check
+        if (!path.isEmpty()) {
+            Node endNode = path.get(path.size()-1);
+            if (endNode.col != targetCol || endNode.row != targetRow) {
+                needRecalc = true;
+            }
+        }
+
+        if (needRecalc) {
             path = findPath(startCol, startRow, targetCol, targetRow);
             lastCalcTime = now;
         }
 
         if (!path.isEmpty()) {
             Node next = path.get(0);
-            // if reached next node (close enough)
             if (getDistance(me.getX(), me.getY(), next.col * ts, next.row * ts) < me.getSpeed()) {
                 path.remove(0);
                 if (path.isEmpty()) return;
@@ -229,7 +239,6 @@ public class UserAI implements TankPanel {
 
         dx = 0; dy = 0;
 
-        //to avoid corner stuck
         if (tx != cx) {
             if (Math.abs(cy - ty) > s) {
                 dy = (cy < ty) ? s : -s; 
@@ -245,63 +254,51 @@ public class UserAI implements TankPanel {
                 dy = (cy < ty) ? s : -s;
             }
         }
-
         if (me.move(dx, dy)) me.update(dx, dy);
     }
 
     // A*
-
-    // Standard A* Node
     public class Node {
-        int col, row;
-        int gCost;      // dist from start
-        int hCost;      // heuristic (dist to end)
-        int fCost;      // total (g + h)
+        int col, row, gCost, hCost, fCost;
         Node parent;
-
-        public Node(int col, int row) {
-            this.col = col;
-            this.row = row;
+        public Node(int col, int row) { 
+            this.col = col; 
+            this.row = row; 
         }
     }
 
     private List<Node> findPath(int startCol, int startRow, int endCol, int endRow) {
-        if (!isValid(endCol, endRow) || isWall(endCol, endRow)) return new ArrayList<>();
-
+        if (!isValid(endCol, endRow) || isWall(endCol, endRow)) {
+            return new ArrayList<>();
+        }
         List<Node> openList = new ArrayList<>();
         List<Node> closedList = new ArrayList<>();
-        
         Node startNode = new Node(startCol, startRow);
         openList.add(startNode);
 
         while (!openList.isEmpty()) {
-            // 1. Find node with lowest F cost
             Node current = openList.get(0);
             for (Node n : openList) {
-                if (n.fCost < current.fCost) current = n;
+                if (n.fCost < current.fCost) {
+                    current = n;
+                }
             }
-
             openList.remove(current);
             closedList.add(current);
 
-            // 2. Reached target?
             if (current.col == endCol && current.row == endRow) {
                 return buildPath(current);
             }
 
-            // 3. Check neighbors
             int[][] dirs = {{0,1}, {0,-1}, {1,0}, {-1,0}};
-            
             for (int[] d : dirs) {
                 int nCol = current.col + d[0];
                 int nRow = current.row + d[1];
-
                 if (!isValid(nCol, nRow) || isWall(nCol, nRow)) continue;
                 if (isInList(closedList, nCol, nRow)) continue;
 
                 int newGCost = current.gCost + 1;
                 Node neighbor = getFromList(openList, nCol, nRow);
-
                 if (neighbor == null) {
                     neighbor = new Node(nCol, nRow);
                     neighbor.gCost = newGCost;
@@ -322,26 +319,16 @@ public class UserAI implements TankPanel {
     private List<Node> buildPath(Node endNode) {
         List<Node> p = new ArrayList<>();
         Node cur = endNode;
-        while (cur.parent != null) {
-            p.add(0, cur);
-            cur = cur.parent;
-        }
+        while (cur.parent != null) { p.add(0, cur); cur = cur.parent; }
         return p;
     }
-
-    private boolean isInList(List<Node> list, int col, int row) {
-        return getFromList(list, col, row) != null;
-    }
-
+    private boolean isInList(List<Node> list, int col, int row) { return getFromList(list, col, row) != null; }
     private Node getFromList(List<Node> list, int col, int row) {
-        for (Node n : list) {
-            if (n.col == col && n.row == row) return n;
-        }
+        for (Node n : list) if (n.col == col && n.row == row) return n;
         return null;
     }
 
     // Attack & Utils
-
     private boolean tryAttack() {
         int ts = gp.getTileSize();
         int mx = me.getX() + ts/2;
@@ -354,11 +341,10 @@ public class UserAI implements TankPanel {
         boolean alignY = Math.abs(my - ty) < margin;
 
         if ((alignX || alignY) && hasLineOfSight(mx, my, tx, ty)) {
-            if (alignX) {
-                me.getTankImage(0, (ty > my) ? 1 : -1);
-            } else {
-                me.getTankImage((tx > mx) ? 1 : -1, 0);
-            }
+
+            if (alignX) me.getTankImage(0, (ty > my) ? 1 : -1);
+            else me.getTankImage((tx > mx) ? 1 : -1, 0);
+            
             me.shoot();
             return true;
         }
@@ -369,14 +355,14 @@ public class UserAI implements TankPanel {
         int ts = gp.getTileSize();
         int steps = Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)) / (ts/2);
         if (steps == 0) return true;
-
         float xInc = (float)(x2 - x1) / steps;
         float yInc = (float)(y2 - y1) / steps;
         float cx = x1, cy = y1;
-
         for (int i = 0; i < steps; i++) {
             cx += xInc; cy += yInc;
-            if (isWall((int)cx / ts, (int)cy / ts)) return false;
+            if (isWall((int)cx / ts, (int)cy / ts)) {
+                return false;
+            }
         }
         return true;
     }
@@ -392,25 +378,39 @@ public class UserAI implements TankPanel {
     }
 
     @Override
-    public Tank getTank() { return me; }
-    public Tank getTargetTank() { return target; }
-    public GamePanel getGp() { return gp; }
+    public Tank getTank() { 
+        return me; 
+    }
+    public Tank getTargetTank() { 
+        return target; 
+    }
+    public GamePanel getGp() { 
+        return gp; 
+    }
 
     private Tank findTarget() {
-        if (gp.getTankSet() == null) return null;
+        if (gp.getTankSet() == null) {
+            return null;
+        }
         for (Tank t : gp.getTankSet()) {
-            if (t != me && t.getHp() > 0) return t;
+            if (t != me && t.getHp() > 0) {
+                return t;
+            }
         }
         return null;
     }    
 
     private boolean isValid(int col, int row) {
-        return col >= 0 && col < gp.getMaxCol() / gp.getWindow().scale() && 
-               row >= 0 && row < gp.getMaxRow() / gp.getWindow().scale();
+        return (col >= 0 && col < gp.getMaxCol() / gp.getWindow().scale() && 
+                row >= 0 && row < gp.getMaxRow() / gp.getWindow().scale());
     }
     
     private boolean isWall(int col, int row) {
-        try { return gp.getMap()[row][col] == 1; } catch (Exception e) { return true; }
+        try { 
+            return gp.getMap()[row][col] == 1; 
+        } catch (Exception e) { 
+            return true; 
+        }
     }
     
     private double getDistance(int x1, int y1, int x2, int y2) {
