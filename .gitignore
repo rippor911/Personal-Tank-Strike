@@ -7,3 +7,5 @@ document.md
 *.class
 
 bin/
+
+record.txt
