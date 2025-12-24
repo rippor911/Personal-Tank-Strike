@@ -12,6 +12,9 @@ public class ItemManager {
     private int maxItems = 1;
     private int interval = 500;
     private long lastTime;
+    private final static int deltaHp = 1;
+    private final static int deltaSpeed = 6;
+    private final static int duration = 10000;
 
     private String[] types = {"hp", "speed"};
     
@@ -38,15 +41,15 @@ public class ItemManager {
         int y = (int)(Math.random() * gp.getMaxRow()) * gp.getTileSize();
         
         String type = types[(int)(Math.random() * types.length)];
-        int effect = type.equals("hp") ? 1 : 4;
-        int duration = 2000 + (int)(Math.random() % 5000);
+        int effect = type.equals("hp") ? deltaHp : deltaSpeed;
+        int realDuration = duration + (int)(Math.random() % 5000);
 
         while (isBlocked(x, y)) {
             x = (int)(Math.random() * gp.getMaxCol()) * gp.getTileSize();
             y = (int)(Math.random() * gp.getMaxRow()) * gp.getTileSize();
         }
 
-        Item newItem = new Item(x, y, type, effect, duration, now, gp);
+        Item newItem = new Item(x, y, type, effect, realDuration, now, gp);
         items.add(newItem);
     }
 

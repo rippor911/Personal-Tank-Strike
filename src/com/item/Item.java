@@ -61,7 +61,7 @@ public class Item {
     public void update(long now) {
         if (state.equals("uncollected")) {
             touch(now);
-            if (abs(now - bornTime) >= 4 * duration) {
+            if (abs(now - bornTime) >= 2 * duration) {
                 state = "expired";
             }
         }
