@@ -38,7 +38,7 @@ public class HomePanel extends JPanel {
         width = tileSize * maxCol * scale;
         height = tileSize * maxRow * scale;
 
-        backgroundImage = new ImageIcon(ImageLoader.loadImage("/images/home.png")).getImage();
+        backgroundImage = new ImageIcon(ImageLoader.loadImage("home")).getImage();
 
         setPreferredSize(new Dimension(width,height));
         setDoubleBuffered(true);

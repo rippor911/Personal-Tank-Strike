@@ -14,6 +14,7 @@ import java.util.Random;
 import javax.swing.JPanel;
 
 import com.item.Bullet;
+import com.item.ItemManager;
 import com.controller.TankPanel;
 import com.controller.User1;
 import com.controller.User2;
@@ -35,6 +36,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     private TileManager tm = null;
     private BulletManager bm = null;
+    private ItemManager im = null;
 
     private ArrayList<Tank> tankSet;
     private ArrayList<TankPanel> userSet;
@@ -55,6 +57,7 @@ public class GamePanel extends JPanel implements Runnable {
         tm.buildMap();
         map = tm.getMap();
         bm = new BulletManager(this);
+        im = new ItemManager(this);
 
         tankSet = new ArrayList<>();
         userSet = new ArrayList<>();
@@ -224,6 +227,8 @@ public class GamePanel extends JPanel implements Runnable {
     public void update() {
 
         tm.update();
+        bm.update();
+        im.update(System.currentTimeMillis());
 
         int cnt = 0;
 
@@ -237,9 +242,6 @@ public class GamePanel extends JPanel implements Runnable {
         if (cnt <= 1) {
             this.endGame();
         }
-
-        bm.update();
-        
     }
 
     @Override
@@ -249,6 +251,7 @@ public class GamePanel extends JPanel implements Runnable {
         Graphics2D g2 = (Graphics2D) g;
 
         tm.draw(g2);
+        im.draw(g2);
 
         for (TankPanel user : userSet) {
             user.draw(g2);

@@ -1,10 +1,7 @@
 package com.item;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.ArrayList;
-
-import javax.imageio.ImageIO;
 
 import com.GamePanel;
 import com.Tank;
@@ -44,8 +41,8 @@ public class Bullet {
     }
 
     public void initImg() {
-        imgBullet = ImageLoader.loadImage("/images/bullet.png");
-        imgExplosion = ImageLoader.loadImage("/images/explosion.png");
+        imgBullet = ImageLoader.loadImage("bullet");
+        imgExplosion = ImageLoader.loadImage("explosion");
     }
 
     public void move() {
@@ -71,7 +68,7 @@ public class Bullet {
         if (Math.abs(now - bornTime) >= shootInterval && explosionFlag == false) {
             ArrayList<Tank> set = gp.getTankSet();
             for (Tank tk : set) {
-                if (tk.touchBullet(bulletX, bulletY)) {
+                if (tk.touchBullt(bulletX, bulletY)) {
                     tk.beingShot();
                     bornTime = now - standTime + explosionTime; 
                     explosionFlag = true;

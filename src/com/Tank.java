@@ -2,7 +2,6 @@ package com;
 
 import java.io.IOException;
 
-import com.item.Item;
 import com.util.ImageLoader;
 
 import java.awt.image.BufferedImage;
@@ -17,8 +16,8 @@ public class Tank {
     private int delta = 4;
     private int bulletSpan = 300;
     private int state;
+    private final static int maxHp = 10;
 
-    private Item item;
     private BufferedImage [] tankImage;
     private GamePanel gp;
     private int [][] map;
@@ -28,7 +27,6 @@ public class Tank {
         this.tankX = x;
         this.tankY = y;
         score = 0;
-        item = null;
         this.gp = gp;
         this.map = gp.getMap();
         this.fireCd = 0;
@@ -45,14 +43,14 @@ public class Tank {
 
         tankImage = new BufferedImage[8];
 
-        tankImage[0] = ImageLoader.loadImage("/images/tankLeft.png");
-        tankImage[1] = ImageLoader.loadImage("/images/tankLeftDown.png");
-        tankImage[2] = ImageLoader.loadImage("/images/tankDown.png");
-        tankImage[3] = ImageLoader.loadImage("/images/tankRightDown.png");
-        tankImage[4] = ImageLoader.loadImage("/images/tankRight.png");
-        tankImage[5] = ImageLoader.loadImage("/images/tankRightUp.png");
-        tankImage[6] = ImageLoader.loadImage("/images/tankUp.png");
-        tankImage[7] = ImageLoader.loadImage("/images/tankLeftUp.png");
+        tankImage[0] = ImageLoader.loadImage("tankLeft");
+        tankImage[1] = ImageLoader.loadImage("tankLeftDown");
+        tankImage[2] = ImageLoader.loadImage("tankDown");
+        tankImage[3] = ImageLoader.loadImage("tankRightDown");
+        tankImage[4] = ImageLoader.loadImage("tankRight");
+        tankImage[5] = ImageLoader.loadImage("tankRightUp");
+        tankImage[6] = ImageLoader.loadImage("tankUp");
+        tankImage[7] = ImageLoader.loadImage("tankLeftUp");
     }
 
     public BufferedImage getTankImage(int dx,int dy) {
@@ -124,9 +122,14 @@ public class Tank {
         return true;
     }
 
-    public boolean touchBullet(int x,int y) {
+    public boolean touchBullt(int x,int y) {
         return (tankX + delta <= x && x <= tankX + gp.getTileSize() - delta 
             && tankY + delta <= y && y <= tankY + gp.getTileSize() - delta);
+    }
+
+    public boolean touchItem(int x,int y) {
+        return (tankX <= x + delta && x - delta <= tankX + gp.getTileSize() 
+            && tankY <= y + delta && y - delta <= tankY + gp.getTileSize());
     }
 
     public void shoot() {
@@ -217,5 +220,15 @@ public class Tank {
     public int getHp() {
         return hp;
     }
+
+    public void addHp(int deltaHp) {
+        if (hp < maxHp) {
+            hp += deltaHp;
+        }
+    }
+
+	public void addSpeed(int deltaSpeed) {
+		speed += deltaSpeed;
+	}
 
 }
