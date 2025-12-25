@@ -14,7 +14,6 @@ import com.item.Bullet;
 import com.item.Item; 
 
 public class UserAI implements TankPanel {
-
     private Tank me;
     private Tank target;
     private GamePanel gp;
@@ -26,6 +25,8 @@ public class UserAI implements TankPanel {
     private List<Node> path = new ArrayList<>();
     private long lastTime;
     private static final int RECALC_DELAY = 500; 
+    private static final int moveCost = 1;
+    private static final int dangerCost = 10;
 
     // Anti-stuck
     private int lastX, lastY;
@@ -37,10 +38,8 @@ public class UserAI implements TankPanel {
     private Random rand = new Random();
     private int safeDist = 180; 
     private int dodgeCool = 0;
-    
-    // AI Bias
-    private static final int ITEM_BIAS = 100; 
 
+    // Constructor
     public UserAI(int x, int y, GamePanel gp) throws IOException {
         this.gp = gp;
         this.me = new Tank(x, y, gp);
@@ -49,6 +48,7 @@ public class UserAI implements TankPanel {
         this.lastY = y;
     }
 
+    // Core Game Loop (Update & Draw)
     @Override
     public void update() {
         target = findTarget();
@@ -82,46 +82,150 @@ public class UserAI implements TankPanel {
         recPos();
     }
 
+    public void draw(Graphics2D g2) {
+        BufferedImage img = me.getTankImage(dx, dy);
+        if (img != null) {
+            g2.drawImage(img, me.getX(), me.getY(), gp.getTileSize(), gp.getTileSize(), null);
+        } else {
+            g2.setColor(Color.RED);
+            g2.fillRect(me.getX(), me.getY(), gp.getTileSize(), gp.getTileSize());
+        }
+    }
+
+    // AI Strategy & Decision Making
+    private Tank findTarget() {
+        if (gp.getTankSet() == null) {
+            return null;
+        }
+        for (Tank t : gp.getTankSet()) {
+            if (t != me && t.getHp() > 0) {
+                return t;
+            }
+        }
+        return null;
+    } 
+
     private int[] calcDest() {
-        int tx = target.getX();
-        int ty = target.getY();
+        if (me.getHp() < me.getMaxHp() * 0.3) {
+            Item healthPack = findNearestItem("hp");
+            if (healthPack != null) {
+                return new int[]{healthPack.getX(), healthPack.getY()};
+            }
+            return getFleeDest();
+        }
         
-        double minCost = getDist(me.getX(), me.getY(), tx, ty);
+        if (!isInLineOfSight(target, me.getX(), me.getY())) {
+            Item buff = findNearestItem("speed");
+            if (buff != null && getDist(me, buff) < 300) {
+                return new int[]{buff.getX(), buff.getY()};
+            }
+        }
+        return getKitingPosition(target, 4 * gp.getTileSize());
+    }
 
-        List<Item> items = gp.getItems(); 
-        
-        if (items != null && !items.isEmpty()) {
-            for (Item it : items) {
-                if (!it.isLive()) {
-                    continue; 
-                }
+    private Item findNearestItem(String string) {
+        ArrayList<Item> items = gp.getItems();
+        Item nearest = null;
+        double minDist = Double.MAX_VALUE;
 
-                double d = getDist(me.getX(), me.getY(), it.getX(), it.getY());
-                double cost = d - ITEM_BIAS;
-
-                if (cost < minCost) {
-                    minCost = cost;
-                    tx = it.getX();
-                    ty = it.getY();
+        for (Item it : items) {
+            if (it.getType().equals(string)) {
+                double dist = getDist(me.getX(), me.getY(), it.getX(), it.getY());
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearest = it;
                 }
             }
         }
+        return nearest;
+    }
+
+    private int[] getFleeDest() {
+        int ts = gp.getTileSize();
+        int maxX = (gp.getMaxCol() - 1) * ts;
+        int maxY = (gp.getMaxRow() - 1) * ts;
         
-        return new int[]{tx, ty};
+        int[][] candidates = {
+            {ts, ts}, 
+            {maxX - ts, ts}, 
+            {ts, maxY - ts}, 
+            {maxX - ts, maxY - ts}
+        };
+        
+        int[] bestDest = candidates[0];
+        double maxDist = -1;
+        
+        for (int[] pos : candidates) {
+            if (isWall(pos[0] / ts, pos[1] / ts)) continue;
+
+            double d = getDist(target.getX(), target.getY(), pos[0], pos[1]);
+            if (d > maxDist) {
+                maxDist = d;
+                bestDest = pos;
+            }
+        }
+        return bestDest;
     }
 
-    private void stop() {
-        dx = 0;
-        dy = 0;
+    private int[] getKitingPosition(Tank t, int optimalDist) {
+        return new int[]{t.getX(), t.getY()};
+    } 
+
+    // Combat & Vision Logic
+    private boolean tryAttack() {
+        int ts = gp.getTileSize();
+        int mx = me.getX() + ts / 2;
+        int my = me.getY() + ts / 2;
+        int tx = target.getX() + ts / 2;
+        int ty = target.getY() + ts / 2;
+        int margin = ts / 2;
+
+        boolean alignX = Math.abs(mx - tx) < margin;
+        boolean alignY = Math.abs(my - ty) < margin;
+
+        if ((alignX || alignY) && hasLos(mx, my, tx, ty)) {
+
+            if (alignX) {
+                me.getTankImage(0, (ty > my) ? 1 : -1);
+            } else {
+                me.getTankImage((tx > mx) ? 1 : -1, 0);
+            }
+            
+            me.shoot();
+            return true;
+        }
+        return false;
     }
 
-    private void recPos() { 
-        lastX = me.getX(); 
-        lastY = me.getY(); 
+    private boolean hasLos(int x1, int y1, int x2, int y2) {
+        int ts = gp.getTileSize();
+        int steps = Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)) / (ts / 2);
+        
+        if (steps == 0) {
+            return true;
+        }
+        
+        float xi = (float)(x2 - x1) / steps;
+        float yi = (float)(y2 - y1) / steps;
+        float cx = x1;
+        float cy = y1;
+        
+        for (int i = 0; i < steps; i++) {
+            cx += xi; 
+            cy += yi;
+            if (isWall((int)cx / ts, (int)cy / ts)) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    // --- Dodge Logic ---
+    private boolean isInLineOfSight(Tank t, int x, int y) {
+        if (t == null) return false;
+        return hasLos(x, y, t.getX(), t.getY());
+    } 
 
+    // Survival & Dodge Logic
     private boolean checkDodge() {
         if (dodgeCool > 0) {
             dodgeCool--;
@@ -215,8 +319,32 @@ public class UserAI implements TankPanel {
         return false;
     }
 
-    // --- Anti-Stuck Logic ---
+    private boolean checkIncomingBullets() {
+        ArrayList<Bullet> bullets = gp.getBullets();
+        if (bullets == null || bullets.isEmpty()) return false;
 
+        int ts = gp.getTileSize();
+        int mx = me.getX();
+        int my = me.getY();
+
+        for (Bullet b : bullets) {
+            if (getDist(mx, my, b.getX(), b.getY()) > safeDist) continue;
+
+            if (Math.abs(b.getX() - mx) < ts) {
+                if ((b.getDy() > 0 && b.getY() < my) || (b.getDy() < 0 && b.getY() > my)) {
+                    return true;
+                }
+            }
+            if (Math.abs(b.getY() - my) < ts) {
+                if ((b.getDx() > 0 && b.getX() < mx) || (b.getDx() < 0 && b.getX() > mx)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    } 
+
+    // Anti-Stuck Logic
     private boolean checkStuck() {
         if ((dx != 0 || dy != 0) && me.getX() == lastX && me.getY() == lastY) {
             stuckCnt++;
@@ -258,8 +386,7 @@ public class UserAI implements TankPanel {
         }
     }
 
-    // --- Movement & Pathfinding ---
-
+    // Movement Logic
     private void followPath(int tx, int ty) {
         long now = System.currentTimeMillis();
         int ts = gp.getTileSize();
@@ -330,25 +457,28 @@ public class UserAI implements TankPanel {
                 dy = (my < ty) ? spd : -spd;
             }
         }
+
+        if (checkIncomingBullets() && rand.nextInt(10) < 3) {
+            if (dx != 0) dy = (rand.nextBoolean() ? 1 : -1) * me.getSpeed();
+            else if (dy != 0) dx = (rand.nextBoolean() ? 1 : -1) * me.getSpeed();
+        }        
         
         if (me.move(dx, dy)) {
             me.update(dx, dy);
         }
     }
 
-    // --- A* Algorithm ---
-    
-    public class Node {
-        int col, row;
-        int g, h, f;
-        Node parent;
-
-        public Node(int col, int row) { 
-            this.col = col; 
-            this.row = row; 
-        }
+    private void stop() {
+        dx = 0;
+        dy = 0;
     }
 
+    private void recPos() { 
+        lastX = me.getX(); 
+        lastY = me.getY(); 
+    }
+
+    // A* Pathfinding Algorithm
     private List<Node> findPath(int startCol, int startRow, int endCol, int endRow) {
         if (!isValid(endCol, endRow) || isWall(endCol, endRow)) {
             return new ArrayList<>();
@@ -388,7 +518,7 @@ public class UserAI implements TankPanel {
                     continue;
                 }
 
-                int newG = cur.g + 1;
+                int newG = cur.g + moveCost + getDangerLevel(nc, nr);
                 Node nb = getFromList(open, nc, nr);
                 
                 if (nb == null) {
@@ -431,91 +561,31 @@ public class UserAI implements TankPanel {
         return null;
     }
 
-    // --- Attack & Utils ---
-
-    private boolean tryAttack() {
+    private int getDangerLevel(int col, int row) {
+        int danger = 0;
         int ts = gp.getTileSize();
-        int mx = me.getX() + ts / 2;
-        int my = me.getY() + ts / 2;
-        int tx = target.getX() + ts / 2;
-        int ty = target.getY() + ts / 2;
-        int margin = ts / 2;
-
-        boolean alignX = Math.abs(mx - tx) < margin;
-        boolean alignY = Math.abs(my - ty) < margin;
-
-        if ((alignX || alignY) && hasLos(mx, my, tx, ty)) {
-
-            if (alignX) {
-                me.getTankImage(0, (ty > my) ? 1 : -1);
-            } else {
-                me.getTankImage((tx > mx) ? 1 : -1, 0);
-            }
-            
-            me.shoot();
-            return true;
-        }
-        return false;
-    }
-
-    private boolean hasLos(int x1, int y1, int x2, int y2) {
-        int ts = gp.getTileSize();
-        int steps = Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)) / (ts / 2);
+        int x = col * ts;
+        int y = row * ts;
         
-        if (steps == 0) {
-            return true;
+        if (isInLineOfSight(target, x, y)) {
+            danger += dangerCost;
         }
         
-        float xi = (float)(x2 - x1) / steps;
-        float yi = (float)(y2 - y1) / steps;
-        float cx = x1;
-        float cy = y1;
-        
-        for (int i = 0; i < steps; i++) {
-            cx += xi; 
-            cy += yi;
-            if (isWall((int)cx / ts, (int)cy / ts)) {
-                return false;
-            }
-        }
-        return true;
+        return danger;
     }
 
-    public void draw(Graphics2D g2) {
-        BufferedImage img = me.getTankImage(dx, dy);
-        if (img != null) {
-            g2.drawImage(img, me.getX(), me.getY(), gp.getTileSize(), gp.getTileSize(), null);
-        } else {
-            g2.setColor(Color.RED);
-            g2.fillRect(me.getX(), me.getY(), gp.getTileSize(), gp.getTileSize());
+    public class Node {
+        int col, row;
+        int g, h, f;
+        Node parent;
+
+        public Node(int col, int row) { 
+            this.col = col; 
+            this.row = row; 
         }
     }
 
-    @Override
-    public Tank getTank() { 
-        return me; 
-    }
-    
-    public Tank getTargetTank() { 
-        return target; 
-    }
-    
-    public GamePanel getGp() { 
-        return gp; 
-    }
-
-    private Tank findTarget() {
-        if (gp.getTankSet() == null) {
-            return null;
-        }
-        for (Tank t : gp.getTankSet()) {
-            if (t != me && t.getHp() > 0) {
-                return t;
-            }
-        }
-        return null;
-    }    
-
+    // Utilities & Checks
     private boolean isValid(int c, int r) {
         int mc = gp.getMaxCol() / gp.getWindow().scale();
         int mr = gp.getMaxRow() / gp.getWindow().scale();
@@ -532,5 +602,24 @@ public class UserAI implements TankPanel {
     
     private double getDist(int x1, int y1, int x2, int y2) {
         return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+    }
+
+    private double getDist(Tank t, Item item) {
+        if (t == null || item == null) return Double.MAX_VALUE;
+        return getDist(t.getX(), t.getY(), item.getX(), item.getY());
+    } 
+
+    // getter
+    @Override
+    public Tank getTank() { 
+        return me; 
+    }
+    
+    public Tank getTargetTank() { 
+        return target; 
+    }
+    
+    public GamePanel getGp() { 
+        return gp; 
     }
 }

@@ -13,6 +13,7 @@ public class Screen extends JFrame {
     private int maxCol = 28;
     private int maxRow = 21;
     private int scale = 1;    
+    private boolean PVE = false;
 
     public Screen() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -57,6 +58,12 @@ public class Screen extends JFrame {
         gamePanel = new GamePanel(this);
         add(gamePanel);
         gamePanel.startGameThread(mode);
+        if (mode == "PVE") {
+            PVE = true;
+        } else {
+            PVE = false;
+        }
+
         if (homePanel != null) {
             remove(homePanel);
             homePanel = null;
@@ -70,7 +77,7 @@ public class Screen extends JFrame {
             gamePanel = null;
         }
 
-        EndPanel ep = new EndPanel(this, winner, duration);
+        EndPanel ep = new EndPanel(this, winner, duration, PVE);
         this.add(ep);
         this.setVisible(true);
 

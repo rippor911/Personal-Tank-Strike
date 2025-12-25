@@ -19,7 +19,7 @@ public class EndPanel extends JPanel {
 
     private Screen window;
 
-    public EndPanel(Screen window, String winner, long duration) {
+    public EndPanel(Screen window, String winner, long duration, boolean PVE) {
         this.window = window;
         initSize();
 
@@ -35,7 +35,9 @@ public class EndPanel extends JPanel {
         setLayout(new BorderLayout());
         this.add(label, BorderLayout.CENTER);
         this.add(durationLabel, BorderLayout.SOUTH);
-        Logger.writeRecord(duration);
+        if (PVE && winner.contains("0")) {
+            Logger.writeRecord(duration);
+        }
 
         System.out.println(winner);
 

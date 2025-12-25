@@ -9,10 +9,13 @@ import java.awt.image.BufferedImage;
 public class Tank {
     private int tankX;
     private int tankY;
+    private int targetLastX;
+    private int targetLastY;
+    private final static int initHp = 5;
     private final static int initSpeed = 4;
     private int speed = initSpeed;
     private int bulletSpeed = 6;
-    private int hp = 5;
+    private int hp = initHp;
     private int score;
     private int delta = 6;
     private int bulletSpan = 300;
@@ -27,6 +30,8 @@ public class Tank {
     public Tank(int x,int y,GamePanel gp) throws IOException {
         this.tankX = x;
         this.tankY = y;
+        this.targetLastX = x;
+        this.targetLastY = y;
         score = 0;
         this.gp = gp;
         this.map = gp.getMap();
@@ -193,6 +198,8 @@ public class Tank {
     }
 
     public void update(int dx,int dy) {
+        targetLastX = tankX;
+        targetLastY = tankY;
         tankX += dx;
         tankY += dy;
         if (fireCd > 0) {
@@ -218,8 +225,20 @@ public class Tank {
         return tankY;
     }
 
+    public int getTargetLastX() {
+        return targetLastX;
+    }
+
+    public int getTargetLastY() {
+        return targetLastY;
+    }
+
     public int getHp() {
         return hp;
+    }
+
+    public int getMaxHp() {
+        return maxHp;
     }
 
     public void addHp(int deltaHp) {
@@ -233,5 +252,9 @@ public class Tank {
             speed += deltaSpeed;
         }
 	}
+
+    public int getBulletSpeed() {
+        return bulletSpeed;
+    }
 
 }
