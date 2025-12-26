@@ -38,22 +38,31 @@ public class Screen extends JFrame {
 
     //JPanel manager:
 
-    public void build() {
-        homePanel = new HomePanel(this);
-        add(homePanel);
+    public void removeAll() {
+        if (homePanel != null) {
+            remove(homePanel);
+            homePanel = null;
+        }
+        if (gamePanel != null) {
+            gamePanel.stopGame();
+            remove(gamePanel);
+            gamePanel = null;
+        }
         if (endPanel != null) {
             remove(endPanel);
             endPanel = null;
         }
+    }
+
+    public void build() {
+        removeAll();
+        homePanel = new HomePanel(this);
+        add(homePanel);
         setVisible(true);       
     }
 
     void gameStart(String mode) throws IOException {
-
-        if (gamePanel != null) {
-            gamePanel.stopGame(); 
-            remove(gamePanel);
-        }
+        removeAll();
 
         gamePanel = new GamePanel(this);
         add(gamePanel);
@@ -64,26 +73,17 @@ public class Screen extends JFrame {
             PVE = false;
         }
 
-        if (homePanel != null) {
-            remove(homePanel);
-            homePanel = null;
-        }
+
         setVisible(true);
     }
 
     void endGame(String winner, long duration) throws InterruptedException {
-        if (gamePanel != null) {
-            remove(gamePanel);
-            gamePanel = null;
-        }
+        removeAll();
 
         EndPanel ep = new EndPanel(this, winner, duration, PVE);
         this.add(ep);
         this.setVisible(true);
-
-        Thread.sleep(3000);
-
-        this.build();
+        this.endPanel = ep;
     }
 
     //getter:

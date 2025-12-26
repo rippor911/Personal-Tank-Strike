@@ -13,7 +13,7 @@ public class ItemManager {
     private int interval = 1000;
     private long lastTime;
     private final static int deltaHp = 1;
-    private final static int deltaSpeed = 4;
+    private final static int deltaSpeed = 2;
     private final static int duration = 8000;
 
     private String[] types = {"hp", "speed"};

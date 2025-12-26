@@ -1,6 +1,7 @@
 package com;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -9,6 +10,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import com.item.Bullet;
@@ -42,6 +45,8 @@ public class GamePanel extends JPanel implements Runnable {
     private ArrayList<Tank> tankSet;
     private ArrayList<TankPanel> userSet;
 
+    private JButton exitButton;
+
     public GamePanel(Screen screen) throws IOException {
 
         tileSize = screen.getTileSize();
@@ -71,6 +76,7 @@ public class GamePanel extends JPanel implements Runnable {
         this.setFocusable(true);
         this.setRequestFocusEnabled(true);
 
+        this.setLayout(null); 
         this.addHierarchyListener(new java.awt.event.HierarchyListener() {
             @Override
             public void hierarchyChanged(java.awt.event.HierarchyEvent e) {
@@ -82,6 +88,46 @@ public class GamePanel extends JPanel implements Runnable {
             }
         });
 
+        exitButton = new JButton("退出游戏");
+        initButton(exitButton);
+        
+        int btnWidth = 120;
+        int btnHeight = 40;
+        
+        int topWallHeight = tileSize * scale; 
+        int btnY = (topWallHeight - btnHeight) / 2;
+        int btnX = width - btnWidth - 10;
+
+        if (btnY < 0) btnY = 0;
+
+        exitButton.setBounds(btnX, btnY, (int)(btnWidth*0.8), (int)(btnHeight*0.8));
+        
+        exitButton.setFocusable(false);
+
+        exitButton.addActionListener(e -> {
+            stopGame();
+            window.build();
+        });
+        
+        add(exitButton);
+    }
+
+
+    private void initButton(JButton btn) {
+        btn.setFont(new Font("微软雅黑", Font.BOLD, 18));
+        btn.setForeground(Color.WHITE);
+        btn.setBackground(new Color(70, 130, 180));
+        btn.setFocusPainted(false);
+        btn.setBorder(BorderFactory.createRaisedBevelBorder());
+
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btn.setBackground(new Color(100, 149, 237));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btn.setBackground(new Color(70, 130, 180));
+            }
+        });
     }
 
     //Game Page
@@ -263,7 +309,7 @@ public class GamePanel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        Graphics2D g2 = (Graphics2D) g;
+        Graphics2D g2 = (Graphics2D) g.create();
 
         tm.draw(g2);
         im.draw(g2);

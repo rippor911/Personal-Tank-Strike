@@ -12,12 +12,12 @@ public class Tank {
     private int targetLastX;
     private int targetLastY;
     private final static int initHp = 5;
-    private final static int initSpeed = 4;
+    private final static int initSpeed = 3;
     private int speed = initSpeed;
     private int bulletSpeed = 6;
     private int hp = initHp;
     private int score;
-    private int delta = 6;
+    private int delta = 10;
     private int bulletSpan = 300;
     private int state;
     private final static int maxHp = 10;
@@ -129,8 +129,8 @@ public class Tank {
     }
 
     public boolean touchBullt(int x,int y) {
-        return (tankX + delta <= x && x <= tankX + gp.getTileSize() - delta 
-            && tankY + delta <= y && y <= tankY + gp.getTileSize() - delta);
+        return (tankX + delta / 2 <= x && x <= tankX + gp.getTileSize() - delta / 2 
+            && tankY + delta / 2 <= y && y <= tankY + gp.getTileSize() - delta / 2);
     }
 
     public boolean touchItem(int x,int y) {
